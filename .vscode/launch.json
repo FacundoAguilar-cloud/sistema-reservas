@@ -1,0 +1,66 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MsvcEurekaApplication<msvc-eureka>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.eureka.microservice.msvc_eureka.MsvcEurekaApplication",
+            "projectName": "msvc-eureka",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=54926 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=msvc-eureka"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsvcUserApplication<msvc-user>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.user.microservices.msvc_user.MsvcUserApplication",
+            "projectName": "msvc-user",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=59936 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=msvc-user"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsvcAppoinmentsApplication<msvc-appoinments>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.appointments.microservices.msvc_appoinments.MsvcAppoinmentsApplication",
+            "projectName": "msvc-appoinments",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsvcShopsApplication<msvc-shops>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.shops.microservices.msvc_shops.MsvcShopsApplication",
+            "projectName": "msvc-shops",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsvcPaymentsApplication<msvc-payments>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.payments.microservices.msvc_payments.MsvcPaymentsApplication",
+            "projectName": "msvc-payments",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsvcNotificationsApplication<msvc-notifications>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.notif.microservices.msvc_notifications.MsvcNotificationsApplication",
+            "projectName": "msvc-notifications",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
