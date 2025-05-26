@@ -3,9 +3,10 @@ package com.user.microservices.msvc_user.services;
 import java.util.List;
 import java.util.Optional;
 
-
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import com.user.microservices.msvc_user.commons.UserDto;
 import com.user.microservices.msvc_user.entities.Role;
 import com.user.microservices.msvc_user.entities.User;
 import com.user.microservices.msvc_user.exceptions.ResourceAlreadyExistExcp;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService implements UserServiceIMPL {
    private final UserRepository userRepository;
+   private final ModelMapper modelMapper;
 
     @Override
     public User getUserById(Long userId) {
@@ -34,7 +36,7 @@ public class UserService implements UserServiceIMPL {
 
    @Override
     public User createUser(newUserRequest request) {
-        return Optional.of(request).filter(user -> !userRepository.existByEmail(request.getEmail()))
+        return Optional.of(request).filter(user -> !userRepository.existsByEmail(request.getEmail()))
         .map(req -> {
             User user = new User();
             user.setFirstname(request.getFirstname());
@@ -63,7 +65,7 @@ public class UserService implements UserServiceIMPL {
 
     @Override
     public List<User> findUserByRole(Role role) {
-       return (List<User>) userRepository.findByRole(role).orElseThrow(() -> new ResourceNotFoundException("cant find this user by role, please try again"));
+       return (List<User>) userRepository.findByRoles(role).orElseThrow(() -> new ResourceNotFoundException("cant find this user by role, please try again"));
     }
 
     @Override
@@ -81,6 +83,11 @@ public class UserService implements UserServiceIMPL {
         user.removeRole(role);
         return userRepository.save(user);
       });
+    }
+
+    @Override //convertimos el usuario a un DTO con esto
+    public UserDto convertToDto(User user) {
+      return modelMapper.map(user, UserDto.class);
     }
 
 }

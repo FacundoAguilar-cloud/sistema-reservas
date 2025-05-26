@@ -3,6 +3,7 @@ package com.user.microservices.msvc_user.services;
 import java.util.List;
 import java.util.Optional;
 
+import com.user.microservices.msvc_user.commons.UserDto;
 import com.user.microservices.msvc_user.entities.Role;
 import com.user.microservices.msvc_user.entities.User;
 import com.user.microservices.msvc_user.request.newUserRequest;
@@ -24,4 +25,6 @@ List <User> findUserByRole(Role role);
 Optional <User> assingRoleForUser(Long userId,Role role);
 
 Optional <User> removeRoleFromUser(Long userId, Role role);
+
+UserDto convertToDto(User user);
 }

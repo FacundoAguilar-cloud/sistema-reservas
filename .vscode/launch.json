@@ -30,7 +30,8 @@
             "mainClass": "com.appointments.microservices.msvc_appoinments.MsvcAppoinmentsApplication",
             "projectName": "msvc-appoinments",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=62395 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=msvc-appoinments"
         },
         {
             "type": "java",
@@ -40,7 +41,8 @@
             "mainClass": "com.shops.microservices.msvc_shops.MsvcShopsApplication",
             "projectName": "msvc-shops",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=62467 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=msvc-shops"
         },
         {
             "type": "java",
@@ -50,7 +52,8 @@
             "mainClass": "com.payments.microservices.msvc_payments.MsvcPaymentsApplication",
             "projectName": "msvc-payments",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=62431 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=msvc-payments"
         },
         {
             "type": "java",
@@ -59,6 +62,38 @@
             "cwd": "${workspaceFolder}",
             "mainClass": "com.notif.microservices.msvc_notifications.MsvcNotificationsApplication",
             "projectName": "msvc-notifications",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=62414 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=msvc-notifications"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsvcConfigserverApplication<msvc-configserver>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.configserver.msvc.msvc_configserver.MsvcConfigserverApplication",
+            "projectName": "msvc-configserver",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=62375 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=msvc-configserver"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsvcSecurityApplication<msvc-security>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.security.microservices.msvc_security.MsvcSecurityApplication",
+            "projectName": "msvc-security",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MsvcGatewayApplication<msvc-gateway>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.msvc.gateway.msvc_gateway.MsvcGatewayApplication",
+            "projectName": "msvc-gateway",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }
