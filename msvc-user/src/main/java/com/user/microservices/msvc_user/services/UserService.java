@@ -1,5 +1,6 @@
 package com.user.microservices.msvc_user.services;
 
+
 import java.util.List;
 import java.util.Optional;
 
@@ -88,6 +89,15 @@ public class UserService implements UserServiceIMPL {
     @Override //convertimos el usuario a un DTO con esto
     public UserDto convertToDto(User user) {
       return modelMapper.map(user, UserDto.class);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return Optional.ofNullable(userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Cant find user by email, please try again")));
+    }
+
+    public boolean existsByEmail(String email ){
+      return true; //arreglar despues
     }
 
 }

@@ -16,7 +16,9 @@ import com.user.microservices.msvc_user.services.UserServiceIMPL;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+
 
 
 
@@ -82,7 +86,20 @@ try {
 } catch (ResourceNotFoundException e) {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse("An error occurred, please check credentials and try again", null));
 }
+}
+
+@GetMapping("/search-email/{email}")
+public ResponseEntity <UserDto> findByEmail(@PathVariable String email){
+    Optional <User> userOpt = userServiceIMPL.findByEmail(email);
+    if (userOpt.isEmpty()) {
+        return ResponseEntity.notFound().build();
+    }
+    User user = userOpt.get();
+    UserDto userDto = userServiceIMPL.convertToDto(user);
+    return ResponseEntity.ok(userDto);
 }    
+
+
 
 
 
