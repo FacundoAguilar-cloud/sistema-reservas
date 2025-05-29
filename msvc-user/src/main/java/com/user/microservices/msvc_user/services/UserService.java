@@ -96,9 +96,7 @@ public class UserService implements UserServiceIMPL {
         return Optional.ofNullable(userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Cant find user by email, please try again")));
     }
 
-    public boolean existsByEmail(String email ){
-      return true; //arreglar despues
-    }
+
 
 }
 

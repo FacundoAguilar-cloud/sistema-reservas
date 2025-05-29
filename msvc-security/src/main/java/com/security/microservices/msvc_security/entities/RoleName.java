@@ -1,6 +1,6 @@
 package com.security.microservices.msvc_security.entities;
 
-public enum Role {
+public enum RoleName {
 ROLE_ADMIN,
 ROLE_CLIENT,
 }

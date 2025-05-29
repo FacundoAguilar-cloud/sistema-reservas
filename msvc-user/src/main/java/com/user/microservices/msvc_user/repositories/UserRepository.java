@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
 import com.user.microservices.msvc_user.entities.Role;
 import com.user.microservices.msvc_user.entities.User;
 @Repository 

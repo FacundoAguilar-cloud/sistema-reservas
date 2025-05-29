@@ -30,7 +30,7 @@ UserDto convertToDto(User user);
 
 Optional<User> findByEmail(String email);
 
-boolean existsByEmail(String email);
+
 
 
 }
