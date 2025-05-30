@@ -29,7 +29,7 @@ private final UserClient userClient;
     try {
         UserDto user = userClient.findByEmail(email);
         List<GrantedAuthority> authorities = user.getRoles().stream()
-        .map(role -> new SimpleGrantedAuthority(role.getRoleName()))
+        .map(role -> new SimpleGrantedAuthority(role.name()))
         .collect(java.util.stream.Collectors.toList());
         return new User(
             user.getEmail(),
