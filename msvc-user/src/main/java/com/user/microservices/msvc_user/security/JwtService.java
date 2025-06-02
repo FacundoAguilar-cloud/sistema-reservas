@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class JwtService {
-@Value("${}") private String secret; //esto tambien lo tenemos que configurar
+@Value("${application.security.jwt.secret-key}") private String secret; //esto tambien lo tenemos que configurar
 
 public boolean validateToken(String token){
     try {

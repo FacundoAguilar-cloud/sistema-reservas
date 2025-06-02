@@ -10,9 +10,9 @@ import com.auth0.jwt.algorithms.Algorithm;
 
 @Service
 public class JwtService {
-@Value("") //aca hay que poner la clave del app.properties
+@Value("${application.security.jwt.secret-key}") //aca hay que poner la clave del app.properties
 private String secretJwt;
-@Value("") //lo mismo aca
+@Value("${application.security.jwt.expiration}") //lo mismo aca
 private Long expirationTime;
 
 

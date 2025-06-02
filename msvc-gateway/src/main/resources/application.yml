@@ -17,4 +17,9 @@ spring:
           predicates:
             - Path=/api/user/**
 
+        - id: security
+          uri: http://localhost:8006
+          predicates:
+            - Path=/api/auth/**    
+
         

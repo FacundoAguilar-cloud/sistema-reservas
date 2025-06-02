@@ -33,6 +33,7 @@ public ApiResponse register(RegisterRequest request){
             throw new ResourceAlreadyExistExcp("User with this email already exists");
         }
 
+        //este seria solo para registrar usuarios normales, clientes
         newUserRequest  newUser = new newUserRequest();
         newUser.setFirstname(request.getFirstname());
         newUser.setLastname(request.getLastname());
@@ -41,12 +42,34 @@ public ApiResponse register(RegisterRequest request){
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
         newUser.setRoles(Set.of(RoleName.ROLE_CLIENT));
 
+
         try {
             ResponseEntity<ApiResponse> response = userClient.createNewUser(newUser);
             return response.getBody();
         } catch (FeignClientException e) {
             throw new ResourceAlreadyExistExcp("User creation failed in user service");
         }
+    }
+
+    public ApiResponse adminregister (RegisterRequest request){
+        if (userClient.findByEmail(request.getEmail()) != null) {
+            throw new ResourceAlreadyExistExcp("Admin with this email already exists");
+        }
+
+        newUserRequest newUser = new newUserRequest();
+        newUser.setFirstname(request.getFirstname());
+        newUser.setLastname(request.getLastname());
+        newUser.setEmail(request.getEmail());
+        newUser.setPhoneNumber(request.getPhoneNumber());
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        newUser.setRoles(Set.of(RoleName.ROLE_ADMIN));
+        try {
+            ResponseEntity<ApiResponse> response = userClient.createNewUser(newUser);
+            return response.getBody();
+        } catch (FeignClientException e) {
+            throw new ResourceAlreadyExistExcp("Admin creation failed in user service");
+        }
+
     }
 
     public ApiResponse login(LoginRequest request) {

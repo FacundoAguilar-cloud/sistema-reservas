@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "SecurityConfig",
+            "request": "launch",
+            "mainClass": "com.security.microservices.msvc_security.config.SecurityConfig",
+            "projectName": "msvc-security"
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-MsvcEurekaApplication<msvc-eureka>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
@@ -85,7 +92,8 @@
             "mainClass": "com.security.microservices.msvc_security.MsvcSecurityApplication",
             "projectName": "msvc-security",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=57834 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=msvc-security"
         },
         {
             "type": "java",
@@ -95,7 +103,8 @@
             "mainClass": "com.msvc.gateway.msvc_gateway.MsvcGatewayApplication",
             "projectName": "msvc-gateway",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=57820 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=msvc-gateway"
         }
     ]
 }

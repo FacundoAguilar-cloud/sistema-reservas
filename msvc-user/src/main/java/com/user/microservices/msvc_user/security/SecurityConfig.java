@@ -14,18 +14,23 @@ import org.springframework.beans.factory.annotation.Value;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-@Value("${your.property.name:defaultSecret}") //esto hay que configurarlo mas tarde, recordar que la clave la ponemos nosotros (IMPORTANTE)
+@Value("${application.security.jwt.secret-key}") //esto hay que configurarlo mas tarde, recordar que la clave la ponemos nosotros (IMPORTANTE)
 private String secret;
 
 @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 	JwtAuthFilter authFilter = new JwtAuthFilter(secret);
-	http.csrf(csrf -> csrf.disable())
+    http.csrf(csrf -> csrf.disable())
     .httpBasic(Customizer.withDefaults())
-    .authorizeHttpRequests(auth -> auth.requestMatchers("/api/user//**").permitAll().anyRequest().authenticated()) //por ahora quedaria asi para pruebas 
-    .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
-	// Add further security configuration as needed
-	
+    .authorizeHttpRequests(auth -> auth
+        .requestMatchers("/api/user//**").permitAll() //por ahora quedaria asi para pruebas 
+        .requestMatchers("/api/user/search-email/**").permitAll()
+        .anyRequest().authenticated()
+    );
+
+    http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+    // Add further security configuration as needed
+    
     return http.build();
 }
 
