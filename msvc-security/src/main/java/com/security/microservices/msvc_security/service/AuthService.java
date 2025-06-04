@@ -21,7 +21,8 @@ import com.security.microservices.msvc_security.response.LoginResponse;
 import feign.FeignException.FeignClientException;
 import lombok.RequiredArgsConstructor;
 
-@Service @RequiredArgsConstructor
+@Service 
+@RequiredArgsConstructor
 public class AuthService {
 private final PasswordEncoder passwordEncoder;
 private final AuthenticationManager authenticationManager;

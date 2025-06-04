@@ -41,11 +41,6 @@ public PasswordEncoder passwordEncoder(){
     return new BCryptPasswordEncoder();
 }
 
-public static void main(String [] args){
-    System.out.println(new BCryptPasswordEncoder().encode("123456asd"));
-}
-
-
 
 @Bean
 public AuthenticationManager authManager(AuthenticationConfiguration authConfig) throws Exception {

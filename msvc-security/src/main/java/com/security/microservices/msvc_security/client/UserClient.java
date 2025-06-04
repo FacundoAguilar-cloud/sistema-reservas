@@ -12,11 +12,11 @@ import com.security.microservices.msvc_security.dto.UserDto;
 import com.security.microservices.msvc_security.response.ApiResponse;
 
 
-@FeignClient(name = "msvc-user")
+@FeignClient(name = "MSVC-USER")
 public interface UserClient {
  
-@GetMapping("/api/user/search-email{email}")
-UserDto findByEmail(@PathVariable("email") String email);
+@GetMapping("/api/user/search-email/{email}")
+UserDto findByEmail(@PathVariable String email);
 
 @PostMapping("/api/user/create")
 ResponseEntity<ApiResponse> createNewUser(@RequestBody newUserRequest request);
