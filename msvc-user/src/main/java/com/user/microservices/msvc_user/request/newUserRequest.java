@@ -19,5 +19,5 @@ private String email;
 
 private String phoneNumber;
 
-private String password; // por ahora la dejamos
+private String password; 
 }

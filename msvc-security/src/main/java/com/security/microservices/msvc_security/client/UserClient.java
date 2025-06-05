@@ -12,7 +12,7 @@ import com.security.microservices.msvc_security.dto.UserDto;
 import com.security.microservices.msvc_security.response.ApiResponse;
 
 
-@FeignClient(name = "MSVC-USER")
+@FeignClient(name = "msvc-user")
 public interface UserClient {
  
 @GetMapping("/api/user/search-email/{email}")

@@ -18,7 +18,7 @@ spring:
             - Path=/api/user/**
 
         - id: security
-          uri: http://localhost:8006
+          uri: lb://msvc-security
           predicates:
             - Path=/api/auth/**    
 

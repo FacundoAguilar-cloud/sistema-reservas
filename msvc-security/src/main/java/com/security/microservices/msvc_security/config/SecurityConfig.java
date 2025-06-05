@@ -27,7 +27,7 @@ private final UserDetailsServiceImpl uds;
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
     http.csrf(csrf -> csrf.disable())
     .httpBasic(Customizer.withDefaults()).authorizeHttpRequests(auth -> auth
-    .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll().anyRequest().authenticated())
+    .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll().anyRequest().authenticated())
     .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
    // .exceptionHandling(excep -> excep.authenticationEntryPoint(null))//aca iria la clase que se encargará de ver si ese request fue autenticado o no
    // .addFilterBefore(null, UsernamePasswordAuthenticationToken.class);  //aca deberia de ir el authTokenFilter que todavia no tenemos
