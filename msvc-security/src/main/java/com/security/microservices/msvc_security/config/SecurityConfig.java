@@ -1,5 +1,6 @@
 package com.security.microservices.msvc_security.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,7 +13,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.security.microservices.msvc_security.service.AuthTokenFilter;
+import com.security.microservices.msvc_security.service.AuthenticationEntryPointImpl;
 import com.security.microservices.msvc_security.service.UserDetailsServiceImpl;
 
 import lombok.RequiredArgsConstructor;
@@ -22,15 +26,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 private final UserDetailsServiceImpl uds;
+private final AuthTokenFilter authTokenFilter;
+private final AuthenticationEntryPointImpl authenticationEntryPointImpl;
+
+@Value("${application.security.jwt.secret-key}")
+private String secret;
 
 @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
     http.csrf(csrf -> csrf.disable())
     .httpBasic(Customizer.withDefaults()).authorizeHttpRequests(auth -> auth
-    .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll().anyRequest().authenticated())
-    .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-   // .exceptionHandling(excep -> excep.authenticationEntryPoint(null))//aca iria la clase que se encargará de ver si ese request fue autenticado o no
-   // .addFilterBefore(null, UsernamePasswordAuthenticationToken.class);  //aca deberia de ir el authTokenFilter que todavia no tenemos
+    .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+    .requestMatchers("/api/user/**").permitAll() //por ahora quedaria asi para pruebas 
+    .requestMatchers("/api/user/search-email/**").permitAll()
+    .anyRequest().authenticated())
+    .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    .exceptionHandling(excep -> excep.authenticationEntryPoint(authenticationEntryPointImpl))//aca iria la clase que se encargará de ver si ese request fue autenticado o no
+    .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
 }
 
