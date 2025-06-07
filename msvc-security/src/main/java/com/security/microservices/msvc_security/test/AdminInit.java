@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 
 import com.security.microservices.msvc_security.client.UserClient;
 import com.security.microservices.msvc_security.commons.newUserRequest;
-import com.security.microservices.msvc_security.entities.RoleName;
+import com.security.microservices.msvc_security.entities.Role;
+
 
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -84,7 +85,7 @@ private final PasswordEncoder passwordEncoder;
             admin.setEmail(email);
             admin.setPhoneNumber("1122345631");
             admin.setPassword(passwordEncoder.encode("1234asd"));
-            admin.setRoles(Set.of(RoleName.ROLE_ADMIN));
+            admin.setRoles(Set.of(Role.ROLE_ADMIN));
 
             userClient.createNewUser(admin);
             log.info("Usuario admin creado exitosamente");

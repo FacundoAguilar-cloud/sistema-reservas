@@ -1,5 +1,9 @@
 package com.security.microservices.msvc_security.request;
 
+import java.util.Set;
+
+import com.security.microservices.msvc_security.entities.Role;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -24,4 +28,6 @@ private String phoneNumber;
 @NotBlank(message = "Password is mandatory.")
 @Size(min = 6, message = "The password must be at least 6 characters long.")
 private String password;
+
+private Set <Role> roles;
 }

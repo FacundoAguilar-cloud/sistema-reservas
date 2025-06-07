@@ -2,8 +2,7 @@ package com.security.microservices.msvc_security.dto;
 
 import java.util.Set;
 
-
-import com.security.microservices.msvc_security.entities.RoleName;
+import com.security.microservices.msvc_security.entities.Role;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
@@ -37,10 +36,10 @@ private String phoneNumber;
 @Column(nullable = false)
 private String password;
 
-private Set <RoleName> roles;
+private Set <Role> roles;
 
 
-public void setRoles(Set<RoleName> roles) {
+public void setRoles(Set<Role> roles) {
     this.roles = roles;
 }
 

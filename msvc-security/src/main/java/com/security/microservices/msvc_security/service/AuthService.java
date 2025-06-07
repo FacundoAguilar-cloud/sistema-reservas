@@ -11,14 +11,14 @@ import org.springframework.stereotype.Service;
 
 import com.security.microservices.msvc_security.client.UserClient;
 import com.security.microservices.msvc_security.commons.newUserRequest;
-import com.security.microservices.msvc_security.entities.RoleName;
+import com.security.microservices.msvc_security.entities.Role;
 import com.security.microservices.msvc_security.exceptions.ResourceAlreadyExistExcp;
 import com.security.microservices.msvc_security.request.LoginRequest;
 import com.security.microservices.msvc_security.request.RegisterRequest;
 import com.security.microservices.msvc_security.response.ApiResponse;
 import com.security.microservices.msvc_security.response.LoginResponse;
 
-import feign.FeignException.FeignClientException;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 
 @Service 
@@ -41,13 +41,13 @@ public ApiResponse register(RegisterRequest request){
         newUser.setEmail(request.getEmail());
         newUser.setPhoneNumber(request.getPhoneNumber());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        newUser.setRoles(Set.of(RoleName.ROLE_CLIENT));
+        newUser.setRoles(Set.of(Role.ROLE_CLIENT));
 
 
         try {
             ResponseEntity<ApiResponse> response = userClient.createNewUser(newUser);
             return response.getBody();
-        } catch (FeignClientException e) {
+        } catch (FeignException e) {
             throw new ResourceAlreadyExistExcp("User creation failed in user service");
         }
     }
@@ -63,11 +63,11 @@ public ApiResponse register(RegisterRequest request){
         newUser.setEmail(request.getEmail());
         newUser.setPhoneNumber(request.getPhoneNumber());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        newUser.setRoles(Set.of(RoleName.ROLE_ADMIN));
+        newUser.setRoles(Set.of(Role.ROLE_ADMIN));
         try {
             ResponseEntity<ApiResponse> response = userClient.createNewUser(newUser);
             return response.getBody();
-        } catch (FeignClientException e) {
+        } catch (FeignException e) {
             throw new ResourceAlreadyExistExcp("Admin creation failed in user service");
         }
 
