@@ -8,7 +8,7 @@ import com.security.microservices.msvc_security.request.LoginRequest;
 import com.security.microservices.msvc_security.request.RegisterRequest;
 import com.security.microservices.msvc_security.response.ApiResponse;
 import com.security.microservices.msvc_security.service.AuthService;
-
+import com.security.microservices.msvc_security.service.UserDetailsServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 public class AuthController {
 private final AuthService authService;
+private final UserDetailsServiceImpl userDetailsServiceImpl;
 
 @PostMapping("/register")
 public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest request) {

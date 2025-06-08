@@ -16,7 +16,7 @@ import com.security.microservices.msvc_security.response.ApiResponse;
 public interface UserClient {
  
 @GetMapping("/api/user/search-email/{email}")
-UserDto findByEmail(@PathVariable String email);
+UserDto findByEmail(@PathVariable ("email") String email);
 
 @PostMapping("/api/user/create")
 ResponseEntity<ApiResponse> createNewUser(@RequestBody newUserRequest request);
