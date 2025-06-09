@@ -61,10 +61,12 @@ private String password;
 @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
 @Column(name = "role", nullable = false)
 @Enumerated(EnumType.STRING)
+@lombok.Builder.Default
 private Set <Role> roles = new HashSet<>();  //evitamos repetidos con el set
 
 //con esto vamos a poder habilitar y desabilitar usuarios segun se necesite (SOLO ADMIN)
 @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+@lombok.Builder.Default
 private boolean enabled = true;
 
 public void addRole(Role role){

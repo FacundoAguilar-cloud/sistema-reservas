@@ -31,21 +31,31 @@ private final JwtService jwtService;
 private final UserClient userClient;
 
 public ApiResponse register(RegisterRequest request){
+    System.out.println("=== INICIO REGISTRO ===");
+    System.out.println("Email a registrar: " + request.getEmail());
+
+
                try {
-            UserDto existingUser = userClient.findByEmail(request.getEmail());
+                System.out.println("Verificando si el usuario existe...");
+                ResponseEntity <UserDto> existingUser = userClient.findByEmail(request.getEmail());
+                System.out.println("Usuario encontrado: " + existingUser.getBody());
             if (existingUser != null) {
                 throw new ResourceAlreadyExistExcp("User with this email already exists");
             }
         } catch (FeignException.NotFound e) {
-            // Usuario no existe, continuar
+            System.out.println("Usuario no existe, continuar con el registro");
         } catch (FeignException e) {
-            // Si es error 401, ignorar y continuar (el endpoint está protegido)
-         if (e.status() != 401) {
-             throw new RuntimeException("Error checking the user existence");
+         System.err.println("Error Feign al verificar usuario:");
+         System.err.println("Status: " + e.status());
+         System.err.println("Message: " + e.getMessage());
+         System.err.println("Content: " + e.contentUTF8());
+         
+            if (e.status() != 401) {
+             throw new RuntimeException("Error checking the user existence" + e.getMessage());
          }
         }
 
-        //este seria solo para registrar usuarios normales, clientes
+        System.out.println("Creando objeto para el nuevo usuario");
         newUserRequest  newUser = new newUserRequest();
         newUser.setFirstname(request.getFirstname());
         newUser.setLastname(request.getLastname());
@@ -58,10 +68,15 @@ public ApiResponse register(RegisterRequest request){
         ? request.getRoles()
         : Set.of(Role.ROLE_CLIENT);
         newUser.setRoles(userRoles);
-
+        
+        System.out.println("Objeto newUser creado: " + newUser.getEmail());
 
         try {
+            System.out.println("Llamando al userClient para crear el nuevo usuario");
             ResponseEntity<ApiResponse> response = userClient.createNewUser(newUser);
+             System.out.println("Respuesta recibida - Status: " + response.getStatusCode());
+             System.out.println("Respuesta recibida - Body: " + response.getBody());
+
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() !=null) {
                  return response.getBody();
             } else{
@@ -70,11 +85,16 @@ public ApiResponse register(RegisterRequest request){
 
            
         } catch (FeignException e) {
-           if (e.status() == 409) {
+            System.err.println("=== ERROR FEIGN AL CREAR USUARIO ===");
+            System.err.println("Status: " + e.status());
+            System.err.println("Message: " + e.getMessage());
+            System.err.println("Content: " + e.contentUTF8());
+            System.err.println("Request: " + e.request());
+            if (e.status() == 409) {
              throw new ResourceAlreadyExistExcp("User with this email already exist!");
            }
            
-           return new ApiResponse("Unexpected error during registration", null);
+           return new ApiResponse("Unexpected error during registration", null); //este es el error que nos esta dando a la hora de intentar registrar el user
         }
     }
 

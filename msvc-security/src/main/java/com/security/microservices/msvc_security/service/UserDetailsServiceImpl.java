@@ -3,6 +3,7 @@ package com.security.microservices.msvc_security.service;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -27,7 +28,9 @@ private final UserClient userClient;
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     try {
-        UserDto user = userClient.findByEmail(email);
+        // Replace "yourSecondArgument" with the actual value needed
+        ResponseEntity<UserDto> response = userClient.findByEmail(email);
+        UserDto user = response.getBody();
         List<GrantedAuthority> authorities = user.getRoles().stream()
         .map(role -> new SimpleGrantedAuthority(role.name()))
         .collect(java.util.stream.Collectors.toList());

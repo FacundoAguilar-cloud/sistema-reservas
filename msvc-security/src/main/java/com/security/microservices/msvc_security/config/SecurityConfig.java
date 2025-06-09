@@ -37,8 +37,9 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
     http.csrf(csrf -> csrf.disable())
     .httpBasic(Customizer.withDefaults()).authorizeHttpRequests(auth -> auth
     .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
-    .requestMatchers("/api/user/**").permitAll() //por ahora quedaria asi para pruebas 
+     .requestMatchers(HttpMethod.POST, "/api/user/create").permitAll()
     .requestMatchers(HttpMethod.GET,"/api/user/search-email/**").permitAll()
+    .requestMatchers("/api/user/**").permitAll() //por ahora quedaria asi para pruebas 
     .anyRequest().authenticated())
     .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
     .exceptionHandling(excep -> excep.authenticationEntryPoint(authenticationEntryPointImpl))//aca iria la clase que se encargará de ver si ese request fue autenticado o no
