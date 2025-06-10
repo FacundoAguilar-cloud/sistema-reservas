@@ -2,7 +2,7 @@ package com.security.microservices.msvc_security.commons;
 
 import java.util.Set;
 
-import com.security.microservices.msvc_security.entities.Role;
+
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -25,12 +25,10 @@ private String phoneNumber;
 
 private String password; // por ahora la dejamos
 
-private Set <Role> roles;
+private Set <String> roles; //esto era un set de Role y tenia su constructor
 
 
-public void setRoles(Set<Role> roles) {
-    this.roles = roles;
-}
+
 
 }
 

@@ -1,5 +1,7 @@
 package com.user.microservices.msvc_user.request;
 
+import java.util.Set;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -19,5 +21,7 @@ private String email;
 
 private String phoneNumber;
 
-private String password; 
+private String password; // por ahora la dejamos
+
+private Set <String> roles;
 }

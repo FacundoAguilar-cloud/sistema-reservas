@@ -85,7 +85,7 @@ private final PasswordEncoder passwordEncoder;
             admin.setEmail(email);
             admin.setPhoneNumber("1122345631");
             admin.setPassword(passwordEncoder.encode("1234asd"));
-            admin.setRoles(Set.of(Role.ROLE_ADMIN));
+            admin.setRoles(Set.of(Role.ROLE_ADMIN.name()));
 
             userClient.createNewUser(admin);
             log.info("Usuario admin creado exitosamente");

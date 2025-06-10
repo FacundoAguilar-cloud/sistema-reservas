@@ -1,6 +1,7 @@
 package com.security.microservices.msvc_security.service;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -64,10 +65,13 @@ public ApiResponse register(RegisterRequest request){
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
     
 
-        Set <Role> userRoles = request.getRoles() !=null && !request.getRoles().isEmpty()
+        Set<Role> userRoles = request.getRoles() != null && !request.getRoles().isEmpty()
         ? request.getRoles()
         : Set.of(Role.ROLE_CLIENT);
-        newUser.setRoles(userRoles);
+        Set<String> roleNames = userRoles.stream()
+            .map(Role::name)
+            .collect(Collectors.toSet());
+        newUser.setRoles(roleNames);
         
         System.out.println("Objeto newUser creado: " + newUser.getEmail());
 
