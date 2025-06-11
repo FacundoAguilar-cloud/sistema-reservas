@@ -92,19 +92,6 @@ try {
 }
 }
 
-@GetMapping("/search-email/{email}")
-public ResponseEntity <UserDto> findByEmail(@PathVariable String email){
-    Optional <User> userOpt = userServiceIMPL.findByEmail(email);
-    if (userOpt.isEmpty()) {
-        return ResponseEntity.notFound().build();
-    }
-    User user = userOpt.get();
-    UserDto userDto = userServiceIMPL.convertToDto(user);
-    return ResponseEntity.ok(userDto);
-}    
-
-
-
 
 
 

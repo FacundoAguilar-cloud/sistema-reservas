@@ -1,21 +1,19 @@
-package com.security.microservices.msvc_security.controller;
+package com.user.microservices.msvc_user.controllers;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.security.microservices.msvc_security.exceptions.ResourceAlreadyExistExcp;
-import com.security.microservices.msvc_security.request.LoginRequest;
-import com.security.microservices.msvc_security.request.RegisterRequest;
-import com.security.microservices.msvc_security.response.ApiResponse;
-import com.security.microservices.msvc_security.service.AuthService;
-import com.security.microservices.msvc_security.service.UserDetailsServiceImpl;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.user.microservices.msvc_user.exceptions.ResourceAlreadyExistExcp;
+import com.user.microservices.msvc_user.response.ApiResponse;
+import com.user.microservices.msvc_user.security.AuthService;
+import com.user.microservices.msvc_user.security.UserDetailsServiceImpl;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -51,3 +49,6 @@ public ResponseEntity <ApiResponse> login (@RequestBody LoginRequest requestL) {
 
 
 }
+
+
+

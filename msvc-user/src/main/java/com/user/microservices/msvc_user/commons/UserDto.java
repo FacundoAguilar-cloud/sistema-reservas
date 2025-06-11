@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserDto {
+public class UserDto { 
 
 private Long id;
 @NotBlank

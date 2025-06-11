@@ -1,4 +1,4 @@
-package com.security.microservices.msvc_security.response;
+package com.user.microservices.msvc_user.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,3 +29,5 @@ public LoginResponse(String jwtToken){
 
 
 }
+
+

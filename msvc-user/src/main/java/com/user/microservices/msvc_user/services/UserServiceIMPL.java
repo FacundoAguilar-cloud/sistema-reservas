@@ -28,7 +28,7 @@ Optional <User> removeRoleFromUser(Long userId, Role role);
 
 UserDto convertToDto(User user);
 
-Optional<User> findByEmail(String email);
+User getAuthenticatedUser();
 
 
 

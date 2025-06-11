@@ -1,8 +1,8 @@
-package com.security.microservices.msvc_security.request;
+package com.user.microservices.msvc_user.request;
 
 import java.util.Set;
 
-import com.security.microservices.msvc_security.entities.Role;
+import com.user.microservices.msvc_user.entities.Role;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -31,3 +31,4 @@ private String password;
 
 private Set <Role> roles;
 }
+

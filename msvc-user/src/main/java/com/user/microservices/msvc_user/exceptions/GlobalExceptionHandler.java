@@ -1,11 +1,11 @@
-package com.security.microservices.msvc_security.exceptions;
+package com.user.microservices.msvc_user.exceptions;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.HttpStatus;
 
-import com.security.microservices.msvc_security.response.ApiResponse;
+import com.user.microservices.msvc_user.response.ApiResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -15,9 +15,9 @@ public class GlobalExceptionHandler {
     return new ApiResponse(null, ex.getMessage());
   }
 
-  @ExceptionHandler(ResourceNotFoundExcp.class)
+  @ExceptionHandler(ResourceNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ApiResponse handleNotFound(ResourceNotFoundExcp ex) {
+  public ApiResponse handleNotFound(ResourceNotFoundException ex) {
     return new ApiResponse(null, ex.getMessage());
   }
 
@@ -27,5 +27,6 @@ public class GlobalExceptionHandler {
     return new ApiResponse(null, "An error occurred");
 
 
-}
+
+  }
 }

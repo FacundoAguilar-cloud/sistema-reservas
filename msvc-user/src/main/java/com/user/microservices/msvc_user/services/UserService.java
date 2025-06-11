@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.user.microservices.msvc_user.commons.UserDto;
@@ -54,7 +55,7 @@ public class UserService implements UserServiceIMPL {
         return userRepository.findById(userId).map(existingUser -> {
             existingUser.setFirstname(request.getFirstname());
             existingUser.setLastname(request.getLastname());
-            // Add other fields as needed
+            
             return userRepository.save(existingUser);
         }).orElseThrow(() -> new ResourceNotFoundException("User not found, please try again"));
     }
@@ -92,8 +93,10 @@ public class UserService implements UserServiceIMPL {
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
-        return Optional.ofNullable(userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Cant find user by email, please try again")));
+    public User getAuthenticatedUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return userRepository.findByEmail(email);
     }
 
 
