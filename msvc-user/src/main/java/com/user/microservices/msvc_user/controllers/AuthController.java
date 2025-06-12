@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.user.microservices.msvc_user.exceptions.ResourceAlreadyExistExcp;
+import com.user.microservices.msvc_user.request.LoginRequest;
+import com.user.microservices.msvc_user.request.RegisterRequest;
 import com.user.microservices.msvc_user.response.ApiResponse;
 import com.user.microservices.msvc_user.security.AuthService;
 import com.user.microservices.msvc_user.security.UserDetailsServiceImpl;

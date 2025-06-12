@@ -16,7 +16,6 @@ import com.user.microservices.msvc_user.services.UserServiceIMPL;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 

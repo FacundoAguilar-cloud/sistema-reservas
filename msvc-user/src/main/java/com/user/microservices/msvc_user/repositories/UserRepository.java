@@ -9,7 +9,7 @@ import com.user.microservices.msvc_user.entities.User;
 @Repository 
 public interface UserRepository extends CrudRepository<User, Long> {
 
-    User findByEmail(String email);
+    Optional <User> findByEmail(String email);
 
     boolean existsByEmail (String email);
 

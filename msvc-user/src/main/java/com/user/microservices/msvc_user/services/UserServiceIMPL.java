@@ -28,7 +28,7 @@ Optional <User> removeRoleFromUser(Long userId, Role role);
 
 UserDto convertToDto(User user);
 
-User getAuthenticatedUser();
+Optional <User> getAuthenticatedUser();
 
 
 

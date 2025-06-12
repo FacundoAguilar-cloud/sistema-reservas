@@ -93,7 +93,7 @@ public class UserService implements UserServiceIMPL {
     }
 
     @Override
-    public User getAuthenticatedUser() {
+    public Optional <User> getAuthenticatedUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByEmail(email);
