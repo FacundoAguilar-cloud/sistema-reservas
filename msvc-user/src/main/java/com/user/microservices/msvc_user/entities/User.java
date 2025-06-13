@@ -59,7 +59,7 @@ private String password;
 
 @ElementCollection(fetch = FetchType.EAGER)
 @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-@Column(name = "role", nullable = false)
+@Column(name = "role", nullable = false, length = 30)
 @Enumerated(EnumType.STRING)
 @lombok.Builder.Default
 private Set <Role> roles = new HashSet<>();  //evitamos repetidos con el set

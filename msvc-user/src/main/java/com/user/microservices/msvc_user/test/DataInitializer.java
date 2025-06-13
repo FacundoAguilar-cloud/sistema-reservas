@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.user.microservices.msvc_user.entities.Role;
 import com.user.microservices.msvc_user.entities.User;
 import com.user.microservices.msvc_user.repositories.UserRepository;
-import com.user.microservices.msvc_user.request.updateUserRequest;
+
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +29,12 @@ private final EntityManager entityManager;
 @Override //aca creamos los roles
 public void onApplicationEvent(ApplicationReadyEvent event) {
     Set <String> defaultRoles = Set.of("ROLE_CLIENT", "ROLE_ADMIN");
-    createDefaultRoleIfNotExist(defaultRoles);
     createDefaultUserIfNotExist();
     createDefaultAdminIfNotExist();
 }
 
 private void createDefaultUserIfNotExist(){
-    Role userRole = entityManager.createQuery("SELECT r FROM Role r WHERE r.name = 'ROLE_USER'", Role.class)
-                .getSingleResult();
+    Role userRole = Role.CLIENT;
 
 for (int i = 0; i <= 5; i++) {
     String defaultEmail = "user" + i + "@email.com";
@@ -49,15 +47,33 @@ for (int i = 0; i <= 5; i++) {
     user.setPhoneNumber("1122345678");
     user.setPassword(passwordEncoder.encode("123456asd"));
 
-    user.setRoles(Set.of(entityManager.merge(userRole)));
+    user.setRoles(Set.of(userRole));
     userRepository.save(user);
 
 }                
 }
 
 private void createDefaultAdminIfNotExist(){
-    Role adminRole = 
+    Role adminRole = Role.ADMIN;
+    for(int i = 1; i <= 2; i++ ){
+        String defaultEmail = "admin" +i+"@email.com";
+        if (userRepository.findByEmail(defaultEmail).isPresent()) {
+            continue;
+    }
+    User user = new User();
+    user.setFirstname("Admin");
+    user.setLastname("Admin" + i);
+    user.setEmail(defaultEmail);
+    user.setPhoneNumber("112245678");
+    user.setPassword(passwordEncoder.encode("1234asd"));
+    user.setRoles(Set.of(adminRole));
+    userRepository.save(user);
+
 }
+}
+
+
+
 
 
 

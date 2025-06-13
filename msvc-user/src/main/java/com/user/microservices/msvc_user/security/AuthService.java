@@ -49,7 +49,7 @@ public ApiResponse register(RegisterRequest request){
 
         Set<Role> userRoles = request.getRoles() != null && !request.getRoles().isEmpty()
         ? request.getRoles()
-        : Set.of(Role.ROLE_CLIENT);
+        : Set.of(Role.CLIENT);
         newUser.setRoles(userRoles);
         //guardo usuario
         User savedUser= userRepository.save(newUser);

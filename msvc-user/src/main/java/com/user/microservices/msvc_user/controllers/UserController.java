@@ -68,7 +68,7 @@ public ResponseEntity <ApiResponse> getUserById(@PathVariable Long userId){
 }
 
 @PostMapping("/create") 
-//@PreAuthorize("hasRole('ROLE_ADMIN')")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public ResponseEntity<ApiResponse> createNewUser(@RequestBody newUserRequest request) {
     try {
         User user = userServiceIMPL.createUser(request);
