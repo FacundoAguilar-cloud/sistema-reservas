@@ -29,9 +29,9 @@ private String lastname;
 private String email;
 
 private String phoneNumber;
-@NotBlank(message = "password is mandatory")
-@Column(nullable = false)
-private String password;
+//@NotBlank(message = "password is mandatory")
+//@Column(nullable = false)
+//private String password;
 
 private Set <Role> roles;
 
