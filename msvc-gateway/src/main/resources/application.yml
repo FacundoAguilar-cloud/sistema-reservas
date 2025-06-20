@@ -21,5 +21,8 @@ spring:
           uri: lb://msvc-security
           predicates:
             - Path=/api/auth/**    
-
+        - id: shops
+          uri: lb://msvc-shops
+          predicates:
+            - Path=/api/shop/**
         

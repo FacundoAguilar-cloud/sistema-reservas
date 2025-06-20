@@ -18,13 +18,13 @@ ShopResponse findById(Long shopId);
 
 List <ShopResponse> findByOwner(Long ownerId);
 
-Page <ShopResponse> findByCity(String city);
+Page<ShopResponse> findByCity(String city, Pageable pageable);
 
 Page<ShopResponse> findByType(Shop.ShopType type, Pageable pageable);
 
 ShopResponse createShop(ShopCreateRequest request, Long ownerId);
 
-ShopResponse updateShop(ShopUpdateRequest request, Long ownerId);
+ShopResponse updateShop(Long shopId,ShopUpdateRequest request, Long ownerId);
 
 void deleteShop(Long shopId, Long ownerId);
 

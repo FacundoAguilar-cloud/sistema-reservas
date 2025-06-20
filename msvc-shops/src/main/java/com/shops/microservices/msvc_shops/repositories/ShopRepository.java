@@ -2,6 +2,8 @@ package com.shops.microservices.msvc_shops.repositories;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,9 +14,9 @@ public interface ShopRepository extends CrudRepository<Shop, Long> {
 
 List <Shop> findByOwner(Long ownerId);
 
-List <Shop> findByCity(String city);
+Page <Shop> findByCity(String city, Pageable pageable);
 
-List <Shop> findByShopType(Shop.ShopType shopType);
+Page <Shop> findByShopType(Shop.ShopType shopType, Pageable pageable);
 
 //con esto chequeamos si un negocio existe tanto por su nombre como por su propietarioo
 boolean existsByNameAndOwnerUserId(String name, Long ownerUserId); //tendria que ignorar el case

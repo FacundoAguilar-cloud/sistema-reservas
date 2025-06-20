@@ -6,10 +6,14 @@ import java.time.LocalTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-
+import lombok.NoArgsConstructor;
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
-public class ShopResponse {
+public class ShopResponse {    
+
 private Long id;
 private Long OwnerId;
 private String name;
@@ -22,6 +26,9 @@ private String country;
 
 private String phone;
 private String email;
+
+private String message;
+private Object data;
 
 //agenda y horarios
 public enum WeekSchedule {
