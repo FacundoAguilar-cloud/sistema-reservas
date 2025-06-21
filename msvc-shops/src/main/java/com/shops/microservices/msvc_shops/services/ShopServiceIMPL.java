@@ -13,20 +13,21 @@ import com.shops.microservices.msvc_shops.request.ShopUpdateRequest;
 
 public interface ShopServiceIMPL {
 
+Page <ShopResponse>  findAll(Pageable pageable);
 
-ShopResponse findById(Long shopId);
+ShopResponse findById(Long shopId); //ok
 
-List <ShopResponse> findByOwner(Long ownerId);
+List <ShopResponse> findByOwner(Long ownerId); //ok
 
-Page<ShopResponse> findByCity(String city, Pageable pageable);
+Page<ShopResponse> findByCity(String city, Pageable pageable); //ok
 
-Page<ShopResponse> findByType(Shop.ShopType type, Pageable pageable);
+Page<ShopResponse> findByType(Shop.ShopType type, Pageable pageable); //ok
 
-ShopResponse createShop(ShopCreateRequest request, Long ownerId);
+ShopResponse createShop(ShopCreateRequest request, Long ownerId); //ok
 
-ShopResponse updateShop(Long shopId,ShopUpdateRequest request, Long ownerId);
+ShopResponse updateShop(Long shopId,ShopUpdateRequest request, Long ownerId); //ok
 
-void deleteShop(Long shopId, Long ownerId);
+void deleteShop(Long shopId, Long ownerId); //ok
 
 List <ShopResponse> findNearbyShops(BigDecimal latitude, BigDecimal longitude, Double radiusKm); //este metodo nos va a requerir algun que otro trabajo extra en la entidad, revisar
 

@@ -42,6 +42,12 @@ private final ShopMapper shopMapper;
     }
 
     @Override
+      public Page<ShopResponse> findAll(Pageable pageable) {
+        Page<Shop> shops = shopRepository.findAllShops(pageable);
+        return shops.map(shopMapper::toResponse);
+      }
+
+    @Override
     public List<ShopResponse> findByOwner(Long ownerId) {
         List<Shop> shops = shopRepository.findByOwner(ownerId);
         if (shops == null || shops.isEmpty()) {
@@ -117,5 +123,7 @@ private final ShopMapper shopMapper;
         }
 
 }
+
+      
 
 }

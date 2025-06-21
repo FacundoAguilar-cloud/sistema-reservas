@@ -12,13 +12,15 @@ import com.shops.microservices.msvc_shops.entities.Shop;
 @Repository
 public interface ShopRepository extends CrudRepository<Shop, Long> {
 
+Page <Shop> findAllShops(Pageable pageable);    //nos da TODAS las tiendas en un page
+
 List <Shop> findByOwner(Long ownerId);
 
 Page <Shop> findByCity(String city, Pageable pageable);
 
 Page <Shop> findByShopType(Shop.ShopType shopType, Pageable pageable);
 
-//con esto chequeamos si un negocio existe tanto por su nombre como por su propietarioo
+//con esto chequeamos si un negocio existe tanto por su nombre como por su propietario
 boolean existsByNameAndOwnerUserId(String name, Long ownerUserId); //tendria que ignorar el case
 
 
