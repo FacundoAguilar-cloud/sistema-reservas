@@ -21,4 +21,9 @@ public ResponseEntity<String> handleNotFound(UnauthorizedException ex){
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
 }
 
+@ExceptionHandler(ResourceAlreadyExistException.class)
+public ResponseEntity<String> handleNotFound(ResourceAlreadyExistException ex){
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+}
+
 }

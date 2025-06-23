@@ -21,12 +21,21 @@ public class GlobalExceptionHandler {
     return new ApiResponse(null, ex.getMessage());
   }
 
-  @ExceptionHandler(Exception.class)
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ApiResponse handleOthers(Exception ex) {
-    return new ApiResponse(null, "An error occurred");
+  @ExceptionHandler(FeignException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ApiResponse handleFeign(FeignException ex) {
+    return new ApiResponse(null, ex.getMessage());
+  }
 
+  @ExceptionHandler(JwtException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ApiResponse handelJwt(JwtException ex){
+    return new ApiResponse(null, ex.getMessage());
+  }
 
-
+  @ExceptionHandler(IllegalArgumentException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ApiResponse handleIllegal(IllegalArgumentException ex){
+    return new ApiResponse(null, ex.getMessage());
   }
 }

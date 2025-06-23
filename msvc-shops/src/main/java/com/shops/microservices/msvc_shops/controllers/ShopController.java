@@ -4,8 +4,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shops.microservices.msvc_shops.entities.Shop;
-import com.shops.microservices.msvc_shops.exceptions.ResourceAlreadyExistException;
-import com.shops.microservices.msvc_shops.exceptions.ResourceNotFoundException;
 import com.shops.microservices.msvc_shops.reponse.ShopResponse;
 import com.shops.microservices.msvc_shops.request.ShopCreateRequest;
 import com.shops.microservices.msvc_shops.request.ShopSearchRequest;
@@ -89,34 +87,22 @@ return ResponseEntity.ok(Shop.ShopType.values());
 @PostMapping("/create")
 //aca faltaria todo el apartado de seguridad, eso se va a hacer mas adelante, aca solo estamos terminando la estructura del controlador (usariamos requestHeader)
 public ResponseEntity<ShopResponse> createShop(@Valid @RequestBody ShopCreateRequest request, Long userId) {
-    try {
       ShopResponse shopResponse = shopServiceIMPL.createShop(request, userId);
       return ResponseEntity.status(HttpStatus.CREATED).body(shopResponse);
-    } catch (ResourceAlreadyExistException e) {
-      return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
-    }
+   
 }
 
 @PutMapping("/update/{shopId}/{ownerId}")
 public ResponseEntity<ShopResponse> updateShop(@PathVariable Long shopId,@PathVariable Long ownerId , @Valid @RequestBody ShopUpdateRequest request) {
-    try {
       ShopResponse shopResponse = shopServiceIMPL.updateShop(ownerId, request, shopId);
       return ResponseEntity.status(HttpStatus.OK).body(shopResponse);
-    } catch (ResourceNotFoundException e) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-    }  
-    
 }
 
 @DeleteMapping("/delete/{ownerId}/{shopId}") //el ownerId deberia de venir inyectado
 public ResponseEntity<Void> deleteShop(@PathVariable Long ownerId, @PathVariable Long shopId) {
-   try {
       shopServiceIMPL.deleteShop(shopId, ownerId);
       return ResponseEntity.noContent().build();
-   } catch (ResourceNotFoundException e) {
-      // TODO: handle exception
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-   }
+
 }
 
 //AGREGAR LAS EXCEPCIONES AL HANDLER PARA NO USAR TRY-CATCH Y ALARGAR EL CÓDIGO {IMPORTANTE}

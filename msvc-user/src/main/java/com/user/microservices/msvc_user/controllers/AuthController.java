@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.user.microservices.msvc_user.exceptions.ResourceAlreadyExistExcp;
+
 import com.user.microservices.msvc_user.request.LoginRequest;
 import com.user.microservices.msvc_user.request.RegisterRequest;
 import com.user.microservices.msvc_user.response.ApiResponse;
@@ -26,16 +26,7 @@ private final UserDetailsServiceImpl userDetailsServiceImpl;
 
 @PostMapping("/register")
 public ResponseEntity<ApiResponse> register(@Valid @RequestBody RegisterRequest request) {
-    try {
-        return ResponseEntity.ok(authService.register(request));
-    } 
-    catch(ResourceAlreadyExistExcp e){
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiResponse(null, e.getMessage()));
-    }
-    catch (IllegalArgumentException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ApiResponse(null, "cannot register the user, bad credentials")); //ver traduccion y corregir mas tarde
-    } 
+    return ResponseEntity.ok(authService.register(request));
 }
 
 @PostMapping("/login")

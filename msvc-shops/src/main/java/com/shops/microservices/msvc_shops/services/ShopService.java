@@ -43,13 +43,13 @@ private final ShopMapper shopMapper;
 
     @Override
       public Page<ShopResponse> findAll(Pageable pageable) {
-        Page<Shop> shops = shopRepository.findAllShops(pageable);
+        Page<Shop> shops = shopRepository.findAll(pageable);
         return shops.map(shopMapper::toResponse);
       }
 
     @Override
     public List<ShopResponse> findByOwner(Long ownerId) {
-        List<Shop> shops = shopRepository.findByOwner(ownerId);
+        List<Shop> shops = shopRepository.findByOwnerId(ownerId);
         if (shops == null || shops.isEmpty()) {
             throw new ResourceNotFoundException("Not found, please try again");
         }
@@ -77,7 +77,7 @@ private final ShopMapper shopMapper;
     public ShopResponse createShop(ShopCreateRequest request, Long ownerId) {
         //aca deberiamos crear algo para validar que no existe un negocio con el mismo nombre para un propietario en concreto
 
-        if (shopRepository.existsByNameAndOwnerUserId(request.getName(), ownerId)) {
+        if (shopRepository.existsByNameAndOwnerId(request.getName(), ownerId)) {
             throw new ValidationException("you already have an establishment with that name");
         }
         Shop shop = shopMapper.toEntity(request);

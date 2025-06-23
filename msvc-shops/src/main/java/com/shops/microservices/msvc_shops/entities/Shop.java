@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalTime;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -21,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 //POR AHORA VA A QUEDAR ASI PERO A MEDIDA DEL AVANCE QUE LOGREMOS CON EL DESARROLLO PUEDE MUTAR [IMPORTANTE]  
+@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,7 +34,7 @@ private Long id;
 
 @NotNull(message = "Owner ID is mandatory")
 @Column(name = "owner_id", nullable =  false)
-private Long OwnerId;
+private Long ownerId;
 
 @NotBlank(message = "Shop name is mandatory")
 @Size(min = 2, max = 100, message = "Size must be between 2 and 100 characters")
@@ -113,7 +115,7 @@ public enum WeekSchedule {
 
     @Enumerated(EnumType.STRING)    
     @Column(nullable = false)    
-    private ShopType type;
+    private ShopType shopType;
 
     public enum ShopType{
         BARBERSHOP("Barbershop"),
