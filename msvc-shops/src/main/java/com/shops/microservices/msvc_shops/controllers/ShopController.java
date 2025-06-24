@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -47,16 +48,12 @@ public ResponseEntity<ShopResponse> getShopById(@PathVariable Long shopId) {
    ShopResponse shop = shopServiceIMPL.findById(shopId);
    
    return ResponseEntity.ok(shop);
-
-
 }
 @GetMapping("/get-by-owner")
 public ResponseEntity<ShopResponse> getByOwner(@PathVariable Long shopId) {
    ShopResponse shop = shopServiceIMPL.findById(shopId);
    
    return ResponseEntity.ok(shop);
-
-
 }
 
 @GetMapping("/search")
@@ -68,23 +65,22 @@ public ResponseEntity<Page<ShopResponse>> shopSearch(@Valid @ModelAttribute Shop
    Page <ShopResponse> shops = shopServiceIMPL.findByCity(request.getCity(), pageable);
    return ResponseEntity.ok(shops);
   }
-
   if (request.getType() != null && (request.getCity() == null || request.getCity().trim().isEmpty())) {
    Page <ShopResponse> shops = shopServiceIMPL.findByType(request.getType(), pageable);
    return ResponseEntity.ok(shops);
   }
-
-  // Default case: return all shops or an empty page if no criteria is provided
   Page<ShopResponse> shops = shopServiceIMPL.findAll(pageable);
   return ResponseEntity.ok(shops);
 }
 
-@GetMapping("/all-types") //esto se supone que deberia devolver todos los tipos de <negocios> que hay, probar despues
+@GetMapping("/all-types") 
 public ResponseEntity<Shop.ShopType[]> getAllTypes() {
 return ResponseEntity.ok(Shop.ShopType.values());
 }
 
+
 @PostMapping("/create")
+@PreAuthorize("hasRole('ROLE_SHOP_OWNER')")
 //aca faltaria todo el apartado de seguridad, eso se va a hacer mas adelante, aca solo estamos terminando la estructura del controlador (usariamos requestHeader)
 public ResponseEntity<ShopResponse> createShop(@Valid @RequestBody ShopCreateRequest request, Long userId) {
       ShopResponse shopResponse = shopServiceIMPL.createShop(request, userId);
@@ -93,12 +89,15 @@ public ResponseEntity<ShopResponse> createShop(@Valid @RequestBody ShopCreateReq
 }
 
 @PutMapping("/update/{shopId}/{ownerId}")
+@PreAuthorize("hasRole('ROLE_SHOP_OWNER')")
 public ResponseEntity<ShopResponse> updateShop(@PathVariable Long shopId,@PathVariable Long ownerId , @Valid @RequestBody ShopUpdateRequest request) {
       ShopResponse shopResponse = shopServiceIMPL.updateShop(ownerId, request, shopId);
       return ResponseEntity.status(HttpStatus.OK).body(shopResponse);
 }
 
+
 @DeleteMapping("/delete/{ownerId}/{shopId}") //el ownerId deberia de venir inyectado
+@PreAuthorize("hasRole('ROLE_SHOP_OWNER')")
 public ResponseEntity<Void> deleteShop(@PathVariable Long ownerId, @PathVariable Long shopId) {
       shopServiceIMPL.deleteShop(shopId, ownerId);
       return ResponseEntity.noContent().build();

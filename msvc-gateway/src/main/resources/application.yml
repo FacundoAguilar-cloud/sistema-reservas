@@ -25,4 +25,8 @@ spring:
           uri: lb://msvc-shops
           predicates:
             - Path=/api/shop/**
-        
+          filters:
+            - name: RequestHeader
+              args:
+                name: Authorization
+                value: "#{request.headers['Authorization']}" #Esto nos va a dejar mandar el Jwt mediante el gateway desde users#
