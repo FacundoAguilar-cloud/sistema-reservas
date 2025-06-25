@@ -8,11 +8,14 @@ import com.shops.microservices.msvc_shops.reponse.ShopResponse;
 import com.shops.microservices.msvc_shops.request.ShopCreateRequest;
 import com.shops.microservices.msvc_shops.request.ShopSearchRequest;
 import com.shops.microservices.msvc_shops.request.ShopUpdateRequest;
+import com.shops.microservices.msvc_shops.security.JwtValidator;
 import com.shops.microservices.msvc_shops.services.ShopServiceIMPL;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PutMapping;
 
 
@@ -41,7 +45,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 @Slf4j
 @RequestMapping("/api/shop")
 public class ShopController {
-private final ShopServiceIMPL shopServiceIMPL;   
+private final ShopServiceIMPL shopServiceIMPL;
+private final JwtValidator jwtValidator;  
 
 @GetMapping("/get-by-id/{shopId}")
 public ResponseEntity<ShopResponse> getShopById(@PathVariable Long shopId) {
@@ -81,25 +86,66 @@ return ResponseEntity.ok(Shop.ShopType.values());
 
 @PostMapping("/create")
 @PreAuthorize("hasRole('ROLE_SHOP_OWNER')")
-//aca faltaria todo el apartado de seguridad, eso se va a hacer mas adelante, aca solo estamos terminando la estructura del controlador (usariamos requestHeader)
-public ResponseEntity<ShopResponse> createShop(@Valid @RequestBody ShopCreateRequest request, Long userId) {
+//ya estamos utilizando el request header y la comunicacion mediante el gateway que trnasporta el token
+public ResponseEntity<ShopResponse> createShop(
+      @Valid 
+      @RequestBody ShopCreateRequest request,
+      @RequestHeader("Authorization") String authHeader) {
+      
+       String token = authHeader.replace("Bearer", "");     
+
+      if (!jwtValidator.validateToken(token)) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+    
+    List<String> roles = jwtValidator.getRolesFromToken(token);
+    if (!roles.contains("ROLE_SHOP_OWNER")) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    } 
+    
+    Long userId = jwtValidator.getIdFromToken(token);
+
       ShopResponse shopResponse = shopServiceIMPL.createShop(request, userId);
       return ResponseEntity.status(HttpStatus.CREATED).body(shopResponse);
    
 }
-
-@PutMapping("/update/{shopId}/{ownerId}")
+//recordar que no utilizamos mas el ownerId, sino el userId 
+@PutMapping("/update/{shopId}/{userId}")
 @PreAuthorize("hasRole('ROLE_SHOP_OWNER')")
-public ResponseEntity<ShopResponse> updateShop(@PathVariable Long shopId,@PathVariable Long ownerId , @Valid @RequestBody ShopUpdateRequest request) {
-      ShopResponse shopResponse = shopServiceIMPL.updateShop(ownerId, request, shopId);
+public ResponseEntity<ShopResponse> updateShop(
+      @PathVariable Long shopId, 
+      @Valid @RequestBody ShopUpdateRequest request,
+       @RequestHeader ("Authorization") String authHeader) {
+
+       String token = authHeader.replace("Bearer", "");
+       Long userId = jwtValidator.getIdFromToken(token);
+            
+      ShopResponse shopResponse = shopServiceIMPL.updateShop(userId, request, shopId);
       return ResponseEntity.status(HttpStatus.OK).body(shopResponse);
 }
 
 
-@DeleteMapping("/delete/{ownerId}/{shopId}") //el ownerId deberia de venir inyectado
+@DeleteMapping("/delete/{shopId}") //el ownerId deberia de venir inyectado
 @PreAuthorize("hasRole('ROLE_SHOP_OWNER')")
-public ResponseEntity<Void> deleteShop(@PathVariable Long ownerId, @PathVariable Long shopId) {
-      shopServiceIMPL.deleteShop(shopId, ownerId);
+public ResponseEntity<Void> deleteShop(
+      @PathVariable Long shopId,
+      @RequestHeader ("Authorization") String authHeader ) {
+      
+      String token = authHeader.replace("Bearer", "");
+      
+      if (!jwtValidator.validateToken(token)) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+    
+    
+    List<String> roles = jwtValidator.getRolesFromToken(token);
+    if (!roles.contains("ROLE_SHOP_OWNER")) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+      Long userId = jwtValidator.getIdFromToken(token);
+      
+      shopServiceIMPL.deleteShop(shopId, userId);
       return ResponseEntity.noContent().build();
 
 }
