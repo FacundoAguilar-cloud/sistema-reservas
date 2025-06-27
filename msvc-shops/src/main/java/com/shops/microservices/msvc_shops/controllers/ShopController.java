@@ -10,13 +10,9 @@ import com.shops.microservices.msvc_shops.request.ShopSearchRequest;
 import com.shops.microservices.msvc_shops.request.ShopUpdateRequest;
 import com.shops.microservices.msvc_shops.security.JwtValidator;
 import com.shops.microservices.msvc_shops.services.ShopServiceIMPL;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -24,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -86,29 +83,20 @@ return ResponseEntity.ok(Shop.ShopType.values());
 
 @PostMapping("/create")
 @PreAuthorize("hasRole('ROLE_SHOP_OWNER')")
-//ya estamos utilizando el request header y la comunicacion mediante el gateway que trnasporta el token
+//implementacion limpia con - código
 public ResponseEntity<ShopResponse> createShop(
       @Valid 
       @RequestBody ShopCreateRequest request,
-      @RequestHeader("Authorization") String authHeader) {
+      @RequestHeader("Authorization") String authHeader,
+      Authentication authentication) {
       
-       String token = authHeader.replace("Bearer", "");     
-
-      if (!jwtValidator.validateToken(token)) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-    
-    List<String> roles = jwtValidator.getRolesFromToken(token);
-    if (!roles.contains("ROLE_SHOP_OWNER")) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-    } 
-    
+    String token = authHeader.replace("Bearer ", "");
     Long userId = jwtValidator.getIdFromToken(token);
+    
+    ShopResponse shopResponse = shopServiceIMPL.createShop(request, userId);
+    return ResponseEntity.status(HttpStatus.CREATED).body(shopResponse);
+       }
 
-      ShopResponse shopResponse = shopServiceIMPL.createShop(request, userId);
-      return ResponseEntity.status(HttpStatus.CREATED).body(shopResponse);
-   
-}
 //recordar que no utilizamos mas el ownerId, sino el userId 
 @PutMapping("/update/{shopId}/{userId}")
 @PreAuthorize("hasRole('ROLE_SHOP_OWNER')")
@@ -132,17 +120,6 @@ public ResponseEntity<Void> deleteShop(
       @RequestHeader ("Authorization") String authHeader ) {
       
       String token = authHeader.replace("Bearer", "");
-      
-      if (!jwtValidator.validateToken(token)) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-    
-    
-    List<String> roles = jwtValidator.getRolesFromToken(token);
-    if (!roles.contains("ROLE_SHOP_OWNER")) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-    }
-
       Long userId = jwtValidator.getIdFromToken(token);
       
       shopServiceIMPL.deleteShop(shopId, userId);
@@ -150,7 +127,7 @@ public ResponseEntity<Void> deleteShop(
 
 }
 
-//AGREGAR LAS EXCEPCIONES AL HANDLER PARA NO USAR TRY-CATCH Y ALARGAR EL CÓDIGO {IMPORTANTE}
+
 
 
 
