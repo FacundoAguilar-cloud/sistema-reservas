@@ -12,24 +12,20 @@ spring:
         locator:
           enabled: true
       routes:      
-        - id: user
-          uri: http://localhost:8001
+        - id: user-general
+          uri: lb://msvc-user
           predicates:
             - Path=/api/user/**
-
-        - id: security
-          uri: lb://msvc-security
+        
+        - id: user-auth
+          uri: lb://msvc-user
           predicates:
-            - Path=/api/auth/**    
+            - Path=/api/auth/**
+    
         - id: shops
           uri: lb://msvc-shops
           predicates:
             - Path=/api/shop/**
-      filters:
-        - name: RequestHeader
-          args:
-            name: Authorization
-            value: "#{request.headers['Authorization']}" #Esto nos va a dejar mandar el Jwt mediante el gateway desde users#
-
-  default-filters:
-    - name: PreserveHostHeader
+            
+      default-filters:  # TODO OK, YA FUNCIONA TAMBIEN EL GATEWAY!
+        - name: PreserveHostHeader

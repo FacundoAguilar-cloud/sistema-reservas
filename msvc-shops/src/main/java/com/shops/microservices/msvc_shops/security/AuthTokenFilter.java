@@ -6,9 +6,11 @@ import java.util.stream.Collectors;
 
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -28,46 +30,38 @@ private final JwtValidator jwtValidator;
         @NonNull HttpServletResponse response, 
         @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-            final String requestTokenHeader = request.getHeader("Authorization");
+           // final String requestTokenHeader = request.getHeader("Authorization"); /ESTO LO COMENTAMOS POR EL MOMENTO 
 
-            String username = null;
-            String jwtToken = null;
-
-            if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
-                jwtToken = jwtValidator.extractToken(requestTokenHeader);
-
-                try {
-                    username = jwtValidator.getEmail(jwtToken);
-                } catch (Exception e) {
-                    logger.warn("Cant extract username from token, please try again");
-
-                }
-            } else{
-                logger.debug("JWT not found!");
-            }
-
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                if (jwtValidator.validateToken(jwtToken)) {
-                    List<String> roles = jwtValidator.getRolesFromToken(jwtToken);
-                List<SimpleGrantedAuthority> authorities = roles.stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                    .collect(Collectors.toList());
-
-                // Crear el objeto de autenticación
-                UsernamePasswordAuthenticationToken authToken = 
-                    new UsernamePasswordAuthenticationToken(username, null, authorities);
-                
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
-                // Establecer la autenticación en el contexto de seguridad
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            }
-                filterChain.doFilter(request, response);
-            }
-
+          String jwt = parseJwt(request);
+    try {
+        if (jwt != null && jwtValidator.validateToken(jwt)) {
+            String email = jwtValidator.getEmail(jwt);
+            
+            // Extraer roles directamente del JWT
+            List<String> roles = jwtValidator.getRolesFromToken(jwt); // Necesitas crear este método
+            
+            List<GrantedAuthority> authorities = roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+            
+            // Crear un UserDetails simple sin consultar la BD
+            UserDetails userDetails = User.builder()
+                .username(email)
+                .password("") // No necesitas password para JWT
+                .authorities(authorities)
+                .build();
+            
+            UsernamePasswordAuthenticationToken authentication = 
+                new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+            
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+    } catch (Exception e) {
+        logger.error("Cannot set user authentication: {}", e);
+    }
+    filterChain.doFilter(request, response);
         
-                
+}        
     
 
     
