@@ -36,7 +36,7 @@ public class ShopMapper {
         shop.getEmail();
         shop.setAdvanceBookingDays(request.getAdvanceBookingDays());
         shop.setAdvanceCancellationHours(request.getAdvanceCancellationHours());
-        shop.setShopType(Shop.ShopType.valueOf(request.getType().name()));
+        shop.setShopType(Shop.ShopType.valueOf(request.getShoptype().name()));
         return shop;
     }
 

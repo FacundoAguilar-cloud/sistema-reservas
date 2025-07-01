@@ -31,23 +31,38 @@ private final JwtValidator jwtValidator;
         @NonNull FilterChain filterChain)
             throws ServletException, IOException {
            // final String requestTokenHeader = request.getHeader("Authorization"); /ESTO LO COMENTAMOS POR EL MOMENTO 
-
+         System.out.println("=== JWT FILTER DEBUG ===");
+         System.out.println("Request URL: " + request.getRequestURL());
+         System.out.println("Request Method: " + request.getMethod());
+          
           String jwt = parseJwt(request);
-    try {
-        if (jwt != null && jwtValidator.validateToken(jwt)) {
+
+          System.out.println("JWT Token extraído: " + (jwt != null ? "SÍ (longitud: " + jwt.length() + ")" : "NO"));    
+          
+           if (jwt != null) {
+            System.out.println("Primeros 20 caracteres del token: " + jwt.substring(0, Math.min(20, jwt.length())));
+            }
+
+            try {
+            if (jwt != null && jwtValidator.validateToken(jwt))  {
+            System.out.println("Token válido: SÍ");
+
             String email = jwtValidator.getEmail(jwt);
+            System.out.println("Email extraído: " + email);
             
-            // Extraer roles directamente del JWT
-            List<String> roles = jwtValidator.getRolesFromToken(jwt); // Necesitas crear este método
-            
+           
+            List<String> roles = jwtValidator.getRolesFromToken(jwt); 
+             System.out.println("Roles extraídos: " + roles);
+
             List<GrantedAuthority> authorities = roles.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
+                System.out.println("Authorities creadas: " + authorities);
             
-            // Crear un UserDetails simple sin consultar la BD
+           
             UserDetails userDetails = User.builder()
                 .username(email)
-                .password("") // No necesitas password para JWT
+                .password("") 
                 .authorities(authorities)
                 .build();
             
@@ -55,24 +70,26 @@ private final JwtValidator jwtValidator;
                 new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
             
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            System.out.println("Autenticación establecida correctamente");
+            System.out.println("Usuario autenticado: " + SecurityContextHolder.getContext().getAuthentication().getName());
+            System.out.println("Authorities en contexto: " + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+            
+        } else {
+            System.out.println("Token inválido o nulo");
+            if (jwt != null) {
+                System.out.println("Razón: Token no pasa validación");
+            }
+        
+
         }
     } catch (Exception e) {
+       System.out.println("ERROR en filtro JWT: " + e.getMessage());
+        e.printStackTrace();
         logger.error("Cannot set user authentication: {}", e);
     }
     filterChain.doFilter(request, response);
         
 }        
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     private String parseJwt(HttpServletRequest request){
     String headerAuth= request.getHeader("Authorization");

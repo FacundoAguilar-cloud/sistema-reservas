@@ -30,10 +30,10 @@ http.csrf(csrf -> csrf.disable())
 		.requestMatchers(HttpMethod.GET, "/api/shop/all-types").permitAll()
 
 		//endpoints privados:
-		.requestMatchers(HttpMethod.POST, "/api/shop/create").hasRole("SHOP_OWNER")
-		.requestMatchers(HttpMethod.PUT, "/api/shop/update/**").hasRole("SHOP_OWNER")
-		.requestMatchers(HttpMethod.DELETE, "/api/shop/delete/**").hasRole("SHOP_OWNER")
-		.requestMatchers(HttpMethod.GET, "/api/shop/get-by-owner").hasRole("SHOP_OWNER")
+		.requestMatchers(HttpMethod.POST, "/api/shop/create").hasAuthority("SHOP_OWNER") //probar si funciona y anotarlo directamente aca
+		.requestMatchers(HttpMethod.PUT, "/api/shop/update/**").hasAnyAuthority("SHOP_OWNER")
+		.requestMatchers(HttpMethod.DELETE, "/api/shop/delete/**").hasAuthority("SHOP_OWNER")
+		.requestMatchers(HttpMethod.GET, "/api/shop/get-by-owner").hasAuthority("SHOP_OWNER")
 		.anyRequest().authenticated()
 	)
 	.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

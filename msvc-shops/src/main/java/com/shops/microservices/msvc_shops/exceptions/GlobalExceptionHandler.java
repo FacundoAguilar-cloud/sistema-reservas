@@ -1,11 +1,14 @@
 package com.shops.microservices.msvc_shops.exceptions;
 
 
+import org.modelmapper.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+
+import jakarta.validation.ConstraintViolationException;
 
 
 
@@ -29,6 +32,15 @@ public ResponseEntity<String> handleNotFound(ResourceAlreadyExistException ex){
 @ExceptionHandler(JWTVerificationException.class)
 public ResponseEntity<String> handleJwtVeri(JWTVerificationException ex){
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+}
+@ExceptionHandler(ValidationException.class)
+public ResponseEntity<String> handleVali(ValidationException ex){
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+}
+
+@ExceptionHandler(ConstraintViolationException.class)
+public ResponseEntity<String> handleVio(ConstraintViolationException ex){
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
 }
 
 }

@@ -10,6 +10,8 @@ import com.shops.microservices.msvc_shops.request.ShopSearchRequest;
 import com.shops.microservices.msvc_shops.request.ShopUpdateRequest;
 import com.shops.microservices.msvc_shops.security.JwtValidator;
 import com.shops.microservices.msvc_shops.services.ShopServiceIMPL;
+
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,19 +84,23 @@ return ResponseEntity.ok(Shop.ShopType.values());
 
 
 @PostMapping("/create")
-@PreAuthorize("hasRole('ROLE_SHOP_OWNER')")
+@PreAuthorize("hasAuthority('SHOP_OWNER')")
 //implementacion limpia con - código
 public ResponseEntity<ShopResponse> createShop(
       @Valid 
       @RequestBody ShopCreateRequest request,
       @RequestHeader("Authorization") String authHeader,
-      Authentication authentication) {
-      
-    String token = authHeader.replace("Bearer ", "");
-    Long userId = jwtValidator.getIdFromToken(token);
-    
-    ShopResponse shopResponse = shopServiceIMPL.createShop(request, userId);
-    return ResponseEntity.status(HttpStatus.CREATED).body(shopResponse);
+      Authentication authentication,
+      HttpServletRequest httpRequest) {
+     Long ownerId = extractOwnerIdFromRequest(httpRequest);
+
+     if (ownerId == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+     }
+     
+    ShopResponse shopResponse = shopServiceIMPL.createShop(request, ownerId);
+    return ResponseEntity.status(HttpStatus.CREATED).body(shopResponse);    
+   
        }
 
 //recordar que no utilizamos mas el ownerId, sino el userId 
@@ -127,10 +133,26 @@ public ResponseEntity<Void> deleteShop(
 
 }
 
+private Long extractOwnerIdFromRequest(HttpServletRequest request) {
+    try {
+        // Extraer el token del header
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            
+            // Usar tu JwtService para extraer el ID
+            return jwtValidator.getIdFromToken(token); // Necesitas este método en JwtService
+        }
+        return null;
+    } catch (Exception e) {
+        System.out.println("Error extrayendo owner ID: " + e.getMessage());
+        return null;
+    }
 
 
 
 
+}
 
 
 }
