@@ -28,15 +28,15 @@ public class ShopMapper {
         Shop shop = new Shop();
         shop.setName(request.getName());
         shop.setDescription(request.getDescription());
-        shop.getAdress();
-        shop.getCity();
-        shop.getState();
-        shop.getCountry();
-        shop.getPhone();
-        shop.getEmail();
+        shop.setAdress(request.getAdress());
+        shop.setCity(request.getCity());
+        shop.setState(request.getState());
+        shop.setCountry(request.getCountry());
+        shop.setPhone(request.getPhone());
+        shop.setEmail(request.getEmail());
         shop.setAdvanceBookingDays(request.getAdvanceBookingDays());
         shop.setAdvanceCancellationHours(request.getAdvanceCancellationHours());
-        shop.setShopType(Shop.ShopType.valueOf(request.getShoptype().name()));
+        shop.setShopType(Shop.ShopType.valueOf(request.getShopType().name()));
         return shop;
     }
 
@@ -56,7 +56,7 @@ public class ShopMapper {
         response.setAdvanceCancellationHours(shop.getAdvanceCancellationHours());
         response.setRating(shop.getRating());
         response.setTotalReviews(shop.getTotalReviews());
-        response.setType(ShopResponse.ShopType.valueOf(shop.getShopType().name()));
+        response.setShopType(ShopResponse.ShopType.valueOf(shop.getShopType().name()));
         return response;
     }
 

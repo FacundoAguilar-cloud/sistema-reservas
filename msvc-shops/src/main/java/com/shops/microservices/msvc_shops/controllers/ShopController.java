@@ -69,8 +69,8 @@ public ResponseEntity<Page<ShopResponse>> shopSearch(@Valid @ModelAttribute Shop
    Page <ShopResponse> shops = shopServiceIMPL.findByCity(request.getCity(), pageable);
    return ResponseEntity.ok(shops);
   }
-  if (request.getType() != null && (request.getCity() == null || request.getCity().trim().isEmpty())) {
-   Page <ShopResponse> shops = shopServiceIMPL.findByType(request.getType(), pageable);
+  if (request.getShopType() != null && (request.getCity() == null || request.getCity().trim().isEmpty())) {
+   Page <ShopResponse> shops = shopServiceIMPL.findByType(request.getShopType(), pageable);
    return ResponseEntity.ok(shops);
   }
   Page<ShopResponse> shops = shopServiceIMPL.findAll(pageable);

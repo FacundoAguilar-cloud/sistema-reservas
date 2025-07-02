@@ -94,7 +94,7 @@ public enum WeekSchedule {
 
     @Enumerated(EnumType.STRING)    
     @Column(nullable = false)    
-    private ShopType Shoptype;
+    private ShopType shopType;
     
 
     public enum ShopType{

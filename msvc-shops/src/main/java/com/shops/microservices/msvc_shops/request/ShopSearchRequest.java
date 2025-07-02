@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class ShopSearchRequest {
 private String city;
-private Shop.ShopType type;
+private Shop.ShopType shopType;
 
 @Min(value = 0, message = "Page must be 0' or greater")
 private Integer page = 0;
