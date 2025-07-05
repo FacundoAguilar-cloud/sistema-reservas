@@ -18,4 +18,9 @@ public ResponseEntity<String> handleNotFound(ResourceAlreadyExistException ex){
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 }
 
+@ExceptionHandler
+public ResponseEntity <String> handleAppoint(AppointmentException ex){
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+}
+
 }
