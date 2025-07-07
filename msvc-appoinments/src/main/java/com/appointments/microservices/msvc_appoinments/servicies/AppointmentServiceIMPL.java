@@ -16,13 +16,13 @@ List <AppointmentResponse> findAll();
 
 AppointmentResponse findById(Long appointmentId);
 
-AppointmentResponse getAppointmentsByClient(Long clientId);
+List <AppointmentResponse> getAppointmentsByClient(Long clientId);
 
-AppointmentResponse getAppointemntsByShop(Long shopId);
+List <AppointmentResponse> getAppointemntsByShop(Long shopId);
 
-AppointmentResponse getAppointmentsByBarber(Long barberId);
+List <AppointmentResponse> getAppointmentsByBarber(Long barberId);
 
-AppointmentResponse getAppointmentsByStauts(AppointmentStatus status);
+List <AppointmentResponse> getAppointmentsByStatus(AppointmentStatus status);
 
 List <AppointmentResponse> getAppointmentsByDateRange(Long shopId, LocalDateTime startTime, LocalDateTime endTime);
 

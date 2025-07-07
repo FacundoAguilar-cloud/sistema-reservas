@@ -25,6 +25,7 @@ List <Appointment> findAppointmentsByClientIdAndStatus(Long clientId, Appointmen
 
 //un método que busque reservas entre ciertas fechas
 List <Appointment> findAppointmentsBetweenDates(
+  Long shopId,
   LocalDateTime startDate,
   LocalDateTime endDate  
 );

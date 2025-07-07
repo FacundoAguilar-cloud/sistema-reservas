@@ -13,21 +13,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppointmentResponse {
-    private Long id;
-    private Long clientId;
-    private Long shopId;
-    private Long barberId;
-    private String serviceName;
-    private String serviceDescription;
-    private BigDecimal servicePrice;
-    private LocalDateTime appointmentDate;
-    private Integer durationMinutes;
-    private AppointmentStatus status;
-    private String clientNotes;
-    private String barberNotes;
-    private String cancellationReason;
-    private Long cancelledBy;
-    private LocalDateTime cancelledAt;
-    private LocalDateTime createdAt;
+    private Long id; //ok
+    private Long clientId; //ok
+    private Long shopId; //ok
+    private Long barberId; //ok
+    private String serviceName; //ok
+    private String serviceDescription; //ok
+    private BigDecimal servicePrice; //ok
+    private LocalDateTime appointmentDate; //ok
+    private Integer durationMinutes; //ok
+    private AppointmentStatus status; //ok
+    private String clientNotes; //ok
+    private String barberNotes; //ok
+    private String cancellationReason; //ok
+    private Long cancelledBy; //ok
+    private LocalDateTime cancelledAt; //ok
+    private LocalDateTime createdAt; //ok
     private LocalDateTime updatedAt; //este por ahora va a quedar asi, despues vemos si agregamos otros datos como en la entidad principal con @Transient
 }
