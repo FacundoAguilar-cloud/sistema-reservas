@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -20,6 +22,16 @@ public ResponseEntity<String> handleNotFound(ResourceAlreadyExistException ex){
 
 @ExceptionHandler
 public ResponseEntity <String> handleAppoint(AppointmentException ex){
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+}
+
+@ExceptionHandler
+public ResponseEntity <String> handleUnaServ(ServiceUnavailableException ex){
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+}
+
+@ExceptionHandler
+public ResponseEntity<String> handleBusExcep(BusinessException ex){
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 }
 

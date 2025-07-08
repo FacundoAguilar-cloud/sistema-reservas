@@ -3,12 +3,15 @@ package com.appointments.microservices.msvc_appoinments.request;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.appointments.microservices.msvc_appoinments.entities.AppointmentStatus;
+
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -43,4 +46,7 @@ private String clientNotes;
 
 @Size(max = 700, message = "Barber notes cannot exceed 700 characters")
 private String barberNotes; 
+
+@NotNull(message = "Status is mandatory.")    
+private AppointmentStatus status;
 }
