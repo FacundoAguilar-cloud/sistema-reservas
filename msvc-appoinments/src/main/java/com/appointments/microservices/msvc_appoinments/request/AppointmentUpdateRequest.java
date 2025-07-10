@@ -21,6 +21,8 @@ public class AppointmentUpdateRequest {
 
 private Long shopId;
 
+private Long barberId;
+
 @Size(min = 2, max = 100, message = "Name of the service must be betweem 2 and 100 characters")
 private String serviceName;
 

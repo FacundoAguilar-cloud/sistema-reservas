@@ -54,8 +54,8 @@ public ResponseEntity<ShopResponse> getShopById(@PathVariable Long shopId) {
    return ResponseEntity.ok(shop);
 }
 @GetMapping("/get-by-owner")
-public ResponseEntity<ShopResponse> getByOwner(@PathVariable Long shopId) {
-   ShopResponse shop = shopServiceIMPL.findById(shopId);
+public ResponseEntity<ShopResponse> getByOwner(@PathVariable Long ownerId) {
+   ShopResponse shop = shopServiceIMPL.findById(ownerId);
    
    return ResponseEntity.ok(shop);
 }

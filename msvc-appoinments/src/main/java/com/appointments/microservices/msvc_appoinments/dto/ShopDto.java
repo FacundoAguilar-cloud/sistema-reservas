@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ShopDto {
  private Long id;
+ private Long ownerId;
  private String name;
  private String address;
  private String phone;
