@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 public class ShopSecurityConfig {
 //esto es lo que vamos a tener que rehacer dado que cambie las dependencias
-private final AuthEntryPoint authEntryPoint;
+private final AuthEntryPoint authEntryPoint; 
 private final AuthTokenFilter authTokenFilter;
 @Bean
 public SecurityFilterChain filterChain(HttpSecurity http)throws Exception {

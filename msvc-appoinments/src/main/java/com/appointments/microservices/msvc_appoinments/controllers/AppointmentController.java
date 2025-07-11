@@ -5,26 +5,28 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.appointments.microservices.msvc_appoinments.entities.AppointmentStatus;
 import com.appointments.microservices.msvc_appoinments.repository.AppointmentRepository;
+import com.appointments.microservices.msvc_appoinments.request.AppointmentCreateRequest;
+import com.appointments.microservices.msvc_appoinments.request.AppointmentUpdateRequest;
 import com.appointments.microservices.msvc_appoinments.response.AppointmentResponse;
 import com.appointments.microservices.msvc_appoinments.servicies.AppointmentServiceIMPL;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-
-
-
-
-
-
-
-
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
 
 
 @RestController
@@ -81,6 +83,43 @@ public ResponseEntity<List<AppointmentResponse>> getAppointmentsByDateRange(
     return ResponseEntity.ok(appointments);
 }
 
+@PostMapping("/create")
+public ResponseEntity<AppointmentResponse> createAppointment(
+    @Valid @RequestBody AppointmentCreateRequest request,
+    @PathVariable Long userId,
+    HttpServletRequest httpRequest
+    //faltaria el header para pasar el authorization
+    ) {
+
+     AppointmentResponse response = appointmentServiceIMPL.createAppointment(request, userId);
+     return ResponseEntity.status(HttpStatus.CREATED).body(response);   
+    
+}
+
+@PutMapping("update/{id}/{userId}")
+//esto obviamente va a ser permitido unicamente si se tiene el rol necesario, hayq ue implementar toda la seguridad
+public ResponseEntity<AppointmentResponse> updateAppointment(
+    @PathVariable Long appointmentId, 
+    @PathVariable Long userId,
+    @Valid  @RequestBody AppointmentUpdateRequest request
+    // aca seguramente vamos a tener que pasar la autorizacion como header
+    ) {
+    
+    appointmentServiceIMPL.updateAppointment(request, appointmentId, userId);    
+    
+    // You may want to return a proper ResponseEntity here, e.g., the updated appointment or a status
+    return ResponseEntity.ok().build();
+}
+
+@DeleteMapping("/delete/{appointmentId}")
+public ResponseEntity<AppointmentResponse> deleteAppointment(
+    @PathVariable Long appointmentId,
+    @PathVariable Long userId //pasar la auth mediante header
+){
+    appointmentServiceIMPL.deleteAppointment(appointmentId, userId);
+
+    return ResponseEntity.noContent().build();
+}
 
 
 
