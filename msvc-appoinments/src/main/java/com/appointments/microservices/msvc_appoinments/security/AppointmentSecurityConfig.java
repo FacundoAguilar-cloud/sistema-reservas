@@ -7,6 +7,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,28 +17,32 @@ import lombok.RequiredArgsConstructor;
 
 public class AppointmentSecurityConfig {
 //aca necesitamos el authentrypoint y el authtokenfilter(HACER)
-
+private final AuthEntryPoint authEntryPoint;
+private final AuthTokenFilter authTokenFilter;
 @Bean
-public SecurityFilterChain filterChain(HttpSecurity http)throws Exception {
-http.csrf(csrf -> csrf.disable()).httpBasic(Customizer.withDefaults()).authorizeHttpRequests(auth -> auth
- //Endpoints publicos   
-.requestMatchers(HttpMethod.GET, "/api/appointment/get-by-id").permitAll()
-.requestMatchers(HttpMethod.GET, "/api/appointment/all").permitAll()
-.requestMatchers(HttpMethod.GET, "/api/appointment/by-client").permitAll()
-.requestMatchers(HttpMethod.GET, "/api/appointment/by-shop").permitAll()
-.requestMatchers(HttpMethod.GET, "/api/appointment/by-barber").permitAll()
-.requestMatchers(HttpMethod.GET, "/api/appointment/by-status").permitAll()
-.requestMatchers(HttpMethod.GET, "/api/appointemnt/by-date-range").permitAll()
-.requestMatchers(HttpMethod.POST, "/api/appointment/create").permitAll()
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	http
+		.csrf(csrf -> csrf.disable())
+		.httpBasic(Customizer.withDefaults())
+		.authorizeHttpRequests(auth -> auth
+			// Endpoints publicos   
+			.requestMatchers(HttpMethod.GET, "/api/appointment/get-by-id").permitAll()
+			.requestMatchers(HttpMethod.GET, "/api/appointment/all").permitAll()
+			.requestMatchers(HttpMethod.GET, "/api/appointment/by-client").permitAll()
+			.requestMatchers(HttpMethod.GET, "/api/appointment/by-shop").permitAll()
+			.requestMatchers(HttpMethod.GET, "/api/appointment/by-barber").permitAll()
+			.requestMatchers(HttpMethod.GET, "/api/appointment/by-status").permitAll()
+			.requestMatchers(HttpMethod.GET, "/api/appointemnt/by-date-range").permitAll()
+			.requestMatchers(HttpMethod.POST, "/api/appointment/create").permitAll()
 
-//Endpoints privados
-.requestMatchers(HttpMethod.PUT, "/api/appointment/update/**").hasAuthority("SHOP_OWNER")
-.requestMatchers(HttpMethod.DELETE, "/api/appointment/delete/**").hasAnyAuthority("SHOP_OWNER")
-.anyRequest().authenticated()
-)
-.sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS));
-//aca falta el authEntryPoint y el authTokenFilter(AGREGAR)
-
-return http.build();
+			// Endpoints privados
+			.requestMatchers(HttpMethod.PUT, "/api/appointment/update/**").hasAuthority("SHOP_OWNER")
+			.requestMatchers(HttpMethod.DELETE, "/api/appointment/delete/**").hasAnyAuthority("SHOP_OWNER")
+			.anyRequest().authenticated()
+		)
+		.sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
+		.exceptionHandling(excep -> excep.authenticationEntryPoint(authEntryPoint))
+		.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+	return http.build();
 }
 }

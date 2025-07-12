@@ -26,6 +26,11 @@ spring:
           uri: lb://msvc-shops
           predicates:
             - Path=/api/shop/**
+        
+        - id: appointments
+          uri: lb://msvc-appointments
+          predicates:
+            - Path=/api/appointment/**
             
       default-filters:  # TODO OK, YA FUNCIONA TAMBIEN EL GATEWAY!
         - name: PreserveHostHeader

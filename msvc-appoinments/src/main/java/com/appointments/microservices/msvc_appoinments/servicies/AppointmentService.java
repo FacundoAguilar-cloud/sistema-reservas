@@ -78,7 +78,7 @@ public AppointmentResponse createAppointment(AppointmentCreateRequest request, L
       appointment.setServiceName(request.getServiceName());
       appointment.setServiceDescription(request.getServiceDescription());
       appointment.setServicePrice(request.getServicePrice());
-      appointment.setAppoitmentDate(request.getAppoitmentDate());
+      appointment.setAppointmentDate(request.getAppoitmentDate());
       appointment.setAppointmentDuration(request.getAppointmentDuration());
       appointment.setClientNotes(request.getClientNotes());
       appointment.setStatus(request.getStatus());
@@ -119,7 +119,7 @@ public List <AppointmentResponse> getAppointmentsByShop(Long shopId){
 }
 
 public List <AppointmentResponse> getAppointmentsByBarber(Long barberId){
-   List <Appointment> appointments = appointmentRepository.findAppointmentsByBarber(barberId);
+   List <Appointment> appointments = appointmentRepository.findAppointmentsByBarberId(barberId);
    return appointments.stream()
    .map(appointmentMapper::toResponse).
    toList();
@@ -158,7 +158,7 @@ public AppointmentResponse updateAppointment(Long id, AppointmentUpdateRequest r
    appointment.setServicePrice(request.getServicePrice());
  }
  if (request.getAppoitmentDate() != null) {
-   appointment.setAppoitmentDate(request.getAppoitmentDate());
+   appointment.setAppointmentDate(request.getAppoitmentDate());
    //aca habria que validar conflictos con la nueva fecha
    validateAppointmentDateRange(request.getAppoitmentDate());
    validateAppointmentConflictsForUpdate(appointment, request.getAppoitmentDate(), request.getAppointmentDuration());

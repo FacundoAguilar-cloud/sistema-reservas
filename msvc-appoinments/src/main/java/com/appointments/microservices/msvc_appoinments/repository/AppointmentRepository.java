@@ -3,6 +3,7 @@ package com.appointments.microservices.msvc_appoinments.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,13 +18,13 @@ List <Appointment> findAppointmentsByClientId(Long clientId);
 
 List <Appointment> findAppointmentByBarbershop(Long shopId);
 
-List <Appointment> findAppointmentsByBarber(Long barberId);
+List <Appointment> findAppointmentsByBarberId(Long barberId);
 
 List <Appointment> findAppointmentsByStatus(AppointmentStatus status);
 
 List <Appointment> findAppointmentsByClientIdAndStatus(Long clientId, AppointmentStatus status);
 
-//un método que busque reservas entre ciertas fechas
+@Query("SELECT a FROM Appointment a WHERE a.userId = :userId AND a.dateTime BETWEEN :startDate AND :endDate")
 List <Appointment> findAppointmentsBetweenDates(
   Long shopId,
   LocalDateTime startDate,
@@ -51,10 +52,6 @@ List <Appointment> findConflictsInAppointmentsForShops(
 @Param ("startTime") LocalDateTime starTime,
 @Param ("endTime") LocalDateTime endTime    
 );
-
-//buscar citas pendientes que todavia requieren autorizacion
-
-List <Appointment> findByPendingAppointments(@Param ("currentTime") LocalDateTime currentTime);
 
 
 //buscar citas que vienen en un futuro al dia en que se hace la consulta

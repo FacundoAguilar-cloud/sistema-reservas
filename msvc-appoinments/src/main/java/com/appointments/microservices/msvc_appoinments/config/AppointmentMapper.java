@@ -27,7 +27,7 @@ public Appointment toEntity(AppointmentCreateRequest request){
     appointment.setServiceName(request.getServiceName());
     appointment.setServiceDescription(request.getServiceDescription());
     appointment.setServicePrice(request.getServicePrice());
-    appointment.setAppoitmentDate(request.getAppoitmentDate());
+    appointment.setAppointmentDate(request.getAppoitmentDate());
     appointment.setAppointmentDuration(request.getAppointmentDuration());
     appointment.setClientNotes(request.getClientNotes());
     appointment.setBarberNotes(request.getBarberNotes());
@@ -44,7 +44,7 @@ public AppointmentResponse toResponse(Appointment appointment){
   appointmentResponse.setServiceName(appointment.getServiceName());
   appointmentResponse.setServiceDescription(appointment.getServiceDescription());
   appointmentResponse.setServicePrice(appointment.getServicePrice());
-  appointmentResponse.setAppointmentDate(appointment.getAppoitmentDate());
+  appointmentResponse.setAppointmentDate(appointment.getAppointmentDate());
   appointmentResponse.setDurationMinutes(appointment.getAppointmentDuration());
   appointmentResponse.setClientNotes(appointment.getClientNotes());
   appointmentResponse.setBarberNotes(appointment.getBarberNotes());

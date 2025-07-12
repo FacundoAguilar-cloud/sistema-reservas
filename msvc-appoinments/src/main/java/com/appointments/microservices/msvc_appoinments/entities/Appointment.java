@@ -43,7 +43,7 @@ private String serviceDescription;
 private BigDecimal servicePrice;
 
 @Column(name = "appointment_date", nullable = false)
-private LocalDateTime appoitmentDate;
+private LocalDateTime appointmentDate;
 
 @Column(name = "appointment_duration", nullable = false)
 private Integer appointmentDuration;

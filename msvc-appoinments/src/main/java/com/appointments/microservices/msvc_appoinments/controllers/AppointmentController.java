@@ -20,6 +20,7 @@ import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,7 +33,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/appointment")
-public class AppointmentController {
+public class AppointmentController { 
 
 private final AppointmentRepository appointmentRepository;
 private final AppointmentServiceIMPL appointmentServiceIMPL;    
@@ -95,7 +96,7 @@ public ResponseEntity<AppointmentResponse> createAppointment(
      return ResponseEntity.status(HttpStatus.CREATED).body(response);   
     
 }
-
+@PreAuthorize("hasAuthority('SHOP_OWNER')")
 @PutMapping("update/{id}/{userId}")
 //esto obviamente va a ser permitido unicamente si se tiene el rol necesario, hayq ue implementar toda la seguridad
 public ResponseEntity<AppointmentResponse> updateAppointment(
@@ -111,6 +112,7 @@ public ResponseEntity<AppointmentResponse> updateAppointment(
     return ResponseEntity.ok().build();
 }
 
+@PreAuthorize("hasAuthority('SHOP_OWNER')")
 @DeleteMapping("/delete/{appointmentId}")
 public ResponseEntity<AppointmentResponse> deleteAppointment(
     @PathVariable Long appointmentId,

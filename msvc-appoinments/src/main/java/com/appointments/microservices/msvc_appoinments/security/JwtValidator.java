@@ -2,6 +2,7 @@ package com.appointments.microservices.msvc_appoinments.security;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import com.auth0.jwt.JWT;
@@ -11,7 +12,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 
 @Configuration
 public class JwtValidator {
-
+    
+@Value("${application.security.jwt.secret-key}")
 private String secret; //esta seria la contraseña, la tenemos que poner hardcoded en el archivo de config y ponerla aca con con @Value    
 
 public String getEmail(String token){
