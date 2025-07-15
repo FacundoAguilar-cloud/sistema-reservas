@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AppointmentService {
+public class AppointmentService implements AppointmentServiceIMPL {
 
 private final AppointmentRepository appointmentRepository;
 private final AppointmentMapper appointmentMapper;
@@ -90,7 +90,7 @@ public AppointmentResponse createAppointment(AppointmentCreateRequest request, L
       }
 
 
-@Transactional(readOnly = true)    
+@Transactional(readOnly = true)
 public  AppointmentResponse getAppointmentById(Long id, Long userId){
     Appointment appointment = appointmentRepository.findById(id).
     orElseThrow(() -> new ResourceNotFoundException("Appointment not found please check the Id and try again."));
@@ -104,7 +104,7 @@ public List<AppointmentResponse> getAllAppointment() {
             .toList();
 }
 
-public List <AppointmentResponse> getAppointmentByClient(Long clientId){
+public List <AppointmentResponse> getAppointmentsByClient(Long clientId){
    List <Appointment> appointments = appointmentRepository.findAppointmentsByClientId(clientId);
    return appointments.stream()
    .map(appointmentMapper::toResponse).
@@ -112,7 +112,7 @@ public List <AppointmentResponse> getAppointmentByClient(Long clientId){
 }
 
 public List <AppointmentResponse> getAppointmentsByShop(Long shopId){
-   List <Appointment> appointments = appointmentRepository.findAppointmentByBarbershop(shopId);
+   List <Appointment> appointments = appointmentRepository.findAppointmentByShopId(shopId);
    return appointments.stream()
    .map(appointmentMapper::toResponse).
    toList();
@@ -139,7 +139,7 @@ public List <AppointmentResponse> getAppointmentsByDateRange(Long shopId, LocalD
 }
 
 @Transactional
-public AppointmentResponse updateAppointment(Long id, AppointmentUpdateRequest request, Long userId){
+public AppointmentResponse updateAppointment(AppointmentUpdateRequest request, Long id , Long userId){
  Appointment appointment = appointmentRepository.findById(id)
  .orElseThrow(()-> new ResourceNotFoundException("Appointment not found"));
 
@@ -178,7 +178,7 @@ public AppointmentResponse updateAppointment(Long id, AppointmentUpdateRequest r
  return appointmentMapper.toResponse(updatedAppointment);
 }
 
-public AppointmentResponse changeAppointmentStatus(Long id, ChangeAppointmentStatusRequest request, Long userId){
+public AppointmentResponse changeAppointmentStatus(ChangeAppointmentStatusRequest request,Long id, Long userId){
  Appointment appointment = appointmentRepository.findById(id)
  .orElseThrow(() -> new ResourceNotFoundException("Appointment dont found, please try again."));
  //aca vamos a validar el usuario, no queremos que cualquiera pueda cambiar el status de la cita asi como si nada
@@ -218,7 +218,7 @@ public void deleteAppointment(Long id, Long userId){
 
 
 
-  private void validateShopOperatingHours(ShopDto shop, LocalDateTime appointmentDate){
+  public void validateShopOperatingHours(ShopDto shop, LocalDateTime appointmentDate){
    LocalTime appointmenTime = appointmentDate.toLocalTime();
    LocalTime openingTime = LocalTime.parse(shop.getOpeningTime());
    LocalTime closingTime = LocalTime.parse(shop.getClosingTime());
@@ -228,7 +228,7 @@ public void deleteAppointment(Long id, Long userId){
    }
   } 
   
-  private void validateAppointmentConflicts(AppointmentCreateRequest request){
+  public void validateAppointmentConflicts(AppointmentCreateRequest request){
    List <Appointment> existingAppointments = appointmentRepository.findAppointmentsBetweenDates(
       request.getShopId(), 
       request.getAppoitmentDate(),
@@ -239,7 +239,7 @@ public void deleteAppointment(Long id, Long userId){
       }
   }
 
-  private void validateAppointmentDateRange(LocalDateTime appointmentDate){
+  public void validateAppointmentDateRange(LocalDateTime appointmentDate){
    LocalDateTime now = LocalDateTime.now();
    LocalDateTime maxDate = now.plusMonths(1);
 
@@ -252,7 +252,7 @@ public void deleteAppointment(Long id, Long userId){
 
   }
 
-  private void validateUserPermissions(Appointment appointment, Long userId){
+  public void validateUserPermissions(Appointment appointment, Long userId){
    if (appointment.getClientId().equals(userId)) {
       return;
    }
@@ -268,17 +268,17 @@ public void deleteAppointment(Long id, Long userId){
 
   }
 
-  private void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDateTime newDate, Integer newDuration ){
+  public void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDateTime newDate, Integer newDuration ){
    LocalDateTime starTime = newDate;
    LocalDateTime endTime = starTime.plusMinutes(newDuration != null ? newDuration : appointment.getAppointmentDuration());
 
    List <Appointment> conflicts; 
 
    if (appointment.getBarberId() != null) {
-      conflicts = appointmentRepository.findConflictsInAppointmentsForBarbers(appointment.getBarberId(), starTime, endTime);
+      conflicts = appointmentRepository.findBarberAppointmentConflicts(appointment.getBarberId(), starTime, endTime);
    }
    else{
-      conflicts = appointmentRepository.findConflictsInAppointmentsForShops(appointment.getShopId(), starTime, endTime);
+      conflicts = appointmentRepository.findAppointmentConflictsForShop(appointment.getShopId(), starTime, endTime);
    }
    //aca tendriamos que excluir la cita actual que tratamos de esa lista de conflictos
 
@@ -307,9 +307,7 @@ public void deleteAppointment(Long id, Long userId){
       throw new AppointmentException("You cannot update a completed or canceled appointment.");
    }
   }
-  
-
-  
+ 
 
 
 

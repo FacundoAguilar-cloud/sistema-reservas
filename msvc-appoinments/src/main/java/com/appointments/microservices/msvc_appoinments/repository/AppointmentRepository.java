@@ -16,7 +16,7 @@ public interface AppointmentRepository extends CrudRepository <Appointment, Long
 
 List <Appointment> findAppointmentsByClientId(Long clientId);
 
-List <Appointment> findAppointmentByBarbershop(Long shopId);
+List <Appointment> findAppointmentByShopId(Long shopId);
 
 List <Appointment> findAppointmentsByBarberId(Long barberId);
 
@@ -24,45 +24,50 @@ List <Appointment> findAppointmentsByStatus(AppointmentStatus status);
 
 List <Appointment> findAppointmentsByClientIdAndStatus(Long clientId, AppointmentStatus status);
 
-@Query("SELECT a FROM Appointment a WHERE a.userId = :userId AND a.dateTime BETWEEN :startDate AND :endDate")
+@Query("SELECT a FROM Appointment a WHERE a.clientId = :clientId AND a.appointmentDate BETWEEN :startDate AND :endDate")
 List <Appointment> findAppointmentsBetweenDates(
-  Long shopId,
-  LocalDateTime startDate,
-  LocalDateTime endDate  
-);
+@Param("clientId") Long clientId, 
+@Param("startDate") LocalDateTime startDate, 
+@Param("endDate") LocalDateTime endDate); 
 
-//otro meotodo que busque citas pero por barberia entre cierta fecha
 
-List <Appointment> findAppointmentsByBarbershopBetweenDates(
+//otro meotodo que busque citas pero por barberia entre cierta fecha (no está en uso)
+
+/*List <Appointment> findAppointmentsByShopBetweenDates(
     AppointmentStatus status,
     LocalDateTime startDate,
     LocalDateTime endDate);
-
+*/
 
 //otro metodo que evite posibles conflictos a la hora de reservar un turno con un barbero/estilista que ya está ocupado
-List <Appointment> findConflictsInAppointmentsForBarbers(
+@Query("SELECT a FROM Appointment a WHERE a.barberId = :barberId " +
+"AND a.appointmentDate BETWEEN :startTime AND :endTime " +
+"AND a.status IN ('PENDING', 'CONFIRMED')")
+List <Appointment> findBarberAppointmentConflicts(
 @Param("barberId") Long barberId,
 @Param ("startTime") LocalDateTime startTime,
 @Param ("endTime") LocalDateTime endTime   
 );
 
-
-List <Appointment> findConflictsInAppointmentsForShops(
+@Query("SELECT a FROM Appointment a WHERE a.shopId = :shopId " +
+"AND a.appointmentDate BETWEEN :startTime AND :endTime " +
+"AND a.status != 'CANCELLED'")
+List <Appointment> findAppointmentConflictsForShop(
 @Param ("shopId") Long shopId,
 @Param ("startTime") LocalDateTime starTime,
 @Param ("endTime") LocalDateTime endTime    
 );
 
 
-//buscar citas que vienen en un futuro al dia en que se hace la consulta
+//buscar citas que vienen en un futuro al dia en que se hace la consulta (QUEDA COMENTADO, NO LO VAMOS A USAR POR AHORA)
 
-List <Appointment> findUpcomingAppointments(
+/*List <Appointment> findUpcomingAppointments(
 @Param ("startTime") LocalDateTime startTime,
 @Param ("endTime") LocalDateTime endTime     
 );
 
 
-
+*/
 
 
 

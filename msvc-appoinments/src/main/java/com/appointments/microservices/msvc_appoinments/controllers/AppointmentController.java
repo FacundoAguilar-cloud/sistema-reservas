@@ -39,8 +39,8 @@ private final AppointmentRepository appointmentRepository;
 private final AppointmentServiceIMPL appointmentServiceIMPL;    
 
 @GetMapping("/get-by-id")
-public ResponseEntity <AppointmentResponse> getAppointmentById(@PathVariable Long id) {
-    AppointmentResponse appointment = appointmentServiceIMPL.findById(id);
+public ResponseEntity <AppointmentResponse> getAppointmentById(@RequestParam Long id, @RequestParam Long userId) {
+    AppointmentResponse appointment = appointmentServiceIMPL.getAppointmentById(id, userId);
 
     return ResponseEntity.ok(appointment);
 
@@ -48,7 +48,7 @@ public ResponseEntity <AppointmentResponse> getAppointmentById(@PathVariable Lon
 
 @GetMapping("/all")
 public ResponseEntity<List<AppointmentResponse>> getAllAppointments() {
-    List<AppointmentResponse> appointments = appointmentServiceIMPL.findAll();
+    List<AppointmentResponse> appointments = appointmentServiceIMPL.getAllAppointment();
     return ResponseEntity.ok(appointments);
 }
 
@@ -60,7 +60,7 @@ public ResponseEntity<List<AppointmentResponse>> getAppointmentsByClient(@PathVa
 
 @GetMapping("/by-shop")
 public ResponseEntity<List<AppointmentResponse>> GetAppointmentsByShop(@PathVariable Long shopId) {
-    List<AppointmentResponse> appointments = appointmentServiceIMPL.getAppointemntsByShop(shopId);
+    List<AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByShop(shopId);
     return ResponseEntity.ok(appointments);
 }
 @GetMapping("/by-barber")
