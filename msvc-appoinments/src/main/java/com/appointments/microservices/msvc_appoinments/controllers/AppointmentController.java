@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PostMapping;
 
 
@@ -96,13 +97,15 @@ public ResponseEntity<AppointmentResponse> createAppointment(
      return ResponseEntity.status(HttpStatus.CREATED).body(response);   
     
 }
+
 @PreAuthorize("hasAuthority('SHOP_OWNER')")
 @PutMapping("update/{id}/{userId}")
 //esto obviamente va a ser permitido unicamente si se tiene el rol necesario, hayq ue implementar toda la seguridad
 public ResponseEntity<AppointmentResponse> updateAppointment(
     @PathVariable Long appointmentId, 
     @PathVariable Long userId,
-    @Valid  @RequestBody AppointmentUpdateRequest request
+    @Valid  @RequestBody AppointmentUpdateRequest request,
+    @RequestHeader ("Authorization") String authHeader 
     // aca seguramente vamos a tener que pasar la autorizacion como header
     ) {
     
@@ -116,7 +119,8 @@ public ResponseEntity<AppointmentResponse> updateAppointment(
 @DeleteMapping("/delete/{appointmentId}")
 public ResponseEntity<AppointmentResponse> deleteAppointment(
     @PathVariable Long appointmentId,
-    @PathVariable Long userId //pasar la auth mediante header
+    @PathVariable Long userId, //pasar la auth mediante header
+    @RequestHeader ("Authorization") String authHeader 
 ){
     appointmentServiceIMPL.deleteAppointment(appointmentId, userId);
 
