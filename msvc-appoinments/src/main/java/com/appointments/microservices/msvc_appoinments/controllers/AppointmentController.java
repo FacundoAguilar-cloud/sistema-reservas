@@ -40,6 +40,7 @@ private final AppointmentRepository appointmentRepository;
 private final AppointmentServiceIMPL appointmentServiceIMPL;    
 
 @GetMapping("/get-by-id")
+@PreAuthorize("isAuthenticated()")
 public ResponseEntity <AppointmentResponse> getAppointmentById(@RequestParam Long id, @RequestParam Long userId) {
     AppointmentResponse appointment = appointmentServiceIMPL.getAppointmentById(id, userId);
 
@@ -54,29 +55,34 @@ public ResponseEntity<List<AppointmentResponse>> getAllAppointments() {
 }
 
 @GetMapping("/by-client")
+@PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> getAppointmentsByClient(@PathVariable Long clientId) {
     List<AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByClient(clientId);
     return ResponseEntity.ok(appointments);
 }
 
 @GetMapping("/by-shop")
+@PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> GetAppointmentsByShop(@PathVariable Long shopId) {
     List<AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByShop(shopId);
     return ResponseEntity.ok(appointments);
 }
 @GetMapping("/by-barber")
+@PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> getAppointmentsByBarber(@PathVariable Long barberId) {
     List<AppointmentResponse>  appointments = appointmentServiceIMPL.getAppointmentsByBarber(barberId);
     return ResponseEntity.ok(appointments);
 }
 
 @GetMapping("/by-status")
+@PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> getAppointmentByStatus(@RequestParam AppointmentStatus status) {
     List<AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByStatus(status);
     return ResponseEntity.ok(appointments);
 }
 
 @GetMapping("/by-date-range")
+@PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> getAppointmentsByDateRange(
     @PathVariable Long shopId, 
     @RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
@@ -85,7 +91,8 @@ public ResponseEntity<List<AppointmentResponse>> getAppointmentsByDateRange(
     return ResponseEntity.ok(appointments);
 }
 
-@PostMapping("/create")
+@PostMapping("/create/{userId}")
+@PreAuthorize("isAuthenticated()")
 public ResponseEntity<AppointmentResponse> createAppointment(
     @Valid @RequestBody AppointmentCreateRequest request,
     @PathVariable Long userId,

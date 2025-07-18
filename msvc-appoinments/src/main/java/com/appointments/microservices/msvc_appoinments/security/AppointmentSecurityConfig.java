@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -14,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
-
+@EnableMethodSecurity
 public class AppointmentSecurityConfig {
 //aca necesitamos el authentrypoint y el authtokenfilter(HACER)
 private final AuthEntryPoint authEntryPoint;
@@ -25,15 +26,17 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		.csrf(csrf -> csrf.disable())
 		.httpBasic(Customizer.withDefaults())
 		.authorizeHttpRequests(auth -> auth
-			// Endpoints publicos   
-			.requestMatchers(HttpMethod.GET, "/api/appointment/get-by-id").permitAll()
+			//Endpoints realmente públicos, o sea, sin auth:
 			.requestMatchers(HttpMethod.GET, "/api/appointment/all").permitAll()
-			.requestMatchers(HttpMethod.GET, "/api/appointment/by-client").permitAll()
-			.requestMatchers(HttpMethod.GET, "/api/appointment/by-shop").permitAll()
-			.requestMatchers(HttpMethod.GET, "/api/appointment/by-barber").permitAll()
 			.requestMatchers(HttpMethod.GET, "/api/appointment/by-status").permitAll()
-			.requestMatchers(HttpMethod.GET, "/api/appointemnt/by-date-range").permitAll()
-			.requestMatchers(HttpMethod.POST, "/api/appointment/create").permitAll()
+
+			// Endpoints publicos con auth
+			.requestMatchers(HttpMethod.GET, "/api/appointment/get-by-id").authenticated()
+			.requestMatchers(HttpMethod.GET, "/api/appointment/by-client").authenticated()
+			.requestMatchers(HttpMethod.GET, "/api/appointment/by-shop").authenticated()
+			.requestMatchers(HttpMethod.GET, "/api/appointment/by-barber").authenticated()
+			.requestMatchers(HttpMethod.GET, "/api/appointment/by-date-range").authenticated()
+			.requestMatchers(HttpMethod.POST, "/api/appointment/create/**").authenticated()
 
 			// Endpoints privados
 			.requestMatchers(HttpMethod.PUT, "/api/appointment/update/**").hasAuthority("SHOP_OWNER")

@@ -9,7 +9,7 @@ import com.appointments.microservices.msvc_appoinments.dto.UserDto;
 @FeignClient(name ="msvc-user")
 public interface UserClient {
 
-@GetMapping("/api/users/{id}") //esto obviamente lo tenemos que revisar pero por ahora va a quedar asi
-    UserDto getUserById(@PathVariable("id") Long id);
+@GetMapping("/api/user/get-by-id/{userId}") //revisar
+    UserDto getUserById(@PathVariable("userId") Long id);
     
 }
