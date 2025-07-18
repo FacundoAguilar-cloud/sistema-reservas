@@ -1,7 +1,9 @@
 package com.appointments.microservices.msvc_appoinments.response;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import com.appointments.microservices.msvc_appoinments.entities.AppointmentStatus;
 
@@ -20,7 +22,8 @@ public class AppointmentResponse {
     private String serviceName; //ok
     private String serviceDescription; //ok
     private BigDecimal servicePrice; //ok
-    private LocalDateTime appointmentDate; //ok
+    private LocalDate appointmentDate;
+    private LocalTime appointmentTime; //ok
     private Integer durationMinutes; //ok
     private AppointmentStatus status; //ok
     private String clientNotes; //ok

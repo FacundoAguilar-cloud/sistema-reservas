@@ -1,6 +1,8 @@
 package com.appointments.microservices.msvc_appoinments.servicies;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import com.appointments.microservices.msvc_appoinments.dto.ShopDto;
@@ -36,15 +38,15 @@ AppointmentResponse changeAppointmentStatus(ChangeAppointmentStatusRequest reque
 
 void deleteAppointment(Long id, Long userId);
 
-void validateShopOperatingHours(ShopDto shop, LocalDateTime appointmentDate);
+void validateShopOperatingHours(ShopDto shop, LocalTime appointmentTime);
 
 void validateAppointmentConflicts(AppointmentCreateRequest request);
  
-void validateAppointmentDateRange(LocalDateTime appointmentDate);
+void validateAppointmentDateRange(LocalDate appointmentDate);
 
 void validateUserPermissions(Appointment appointment, Long userId);
 
-void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDateTime newDate, Integer newDuration );
+void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDate newDate, Integer newDuration );
 
 
 

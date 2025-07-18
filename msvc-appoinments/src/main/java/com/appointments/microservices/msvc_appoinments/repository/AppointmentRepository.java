@@ -1,5 +1,6 @@
 package com.appointments.microservices.msvc_appoinments.repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,8 +28,8 @@ List <Appointment> findAppointmentsByClientIdAndStatus(Long clientId, Appointmen
 @Query("SELECT a FROM Appointment a WHERE a.clientId = :clientId AND a.appointmentDate BETWEEN :startDate AND :endDate")
 List <Appointment> findAppointmentsBetweenDates(
 @Param("clientId") Long clientId, 
-@Param("startDate") LocalDateTime startDate, 
-@Param("endDate") LocalDateTime endDate); 
+@Param("startDate") LocalDate startDate, 
+@Param("endDate") LocalDate endDate); 
 
 
 //otro meotodo que busque citas pero por barberia entre cierta fecha (no está en uso)

@@ -1,7 +1,10 @@
 package com.appointments.microservices.msvc_appoinments.entities;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -43,7 +46,10 @@ private String serviceDescription;
 private BigDecimal servicePrice;
 
 @Column(name = "appointment_date", nullable = false)
-private LocalDateTime appointmentDate;
+private LocalDate appointmentDate;
+
+@Column(name = "appointment_time", nullable = false)
+private LocalTime appointmentTime;
 
 @Column(name = "appointment_duration", nullable = false)
 private Integer appointmentDuration;

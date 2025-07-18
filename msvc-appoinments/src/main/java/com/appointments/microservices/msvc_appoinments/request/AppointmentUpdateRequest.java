@@ -1,7 +1,8 @@
 package com.appointments.microservices.msvc_appoinments.request;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.DecimalMin;
@@ -35,7 +36,10 @@ private BigDecimal servicePrice;
 
 @Column(name = "appointment_date", nullable = false)
 @Future(message = "Date must be future")
-private LocalDateTime appoitmentDate;   
+private LocalDate appoitmentDate;
+
+@Column(name = "appointment_time", nullable = false)
+private LocalTime appointmentTime;
 
 @Min(value = 15, message = "The minimun duration is 15 minutes")
 @Max(value = 120, message = "The maximum duration is 120 minutes")

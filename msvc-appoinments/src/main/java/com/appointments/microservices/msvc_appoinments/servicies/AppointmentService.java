@@ -1,6 +1,7 @@
 package com.appointments.microservices.msvc_appoinments.servicies;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -59,8 +60,17 @@ public AppointmentResponse createAppointment(AppointmentCreateRequest request, L
       if (shop == null) {
          throw new ResourceNotFoundException("Shop not found");
       }
-      //ok validado
-      validateShopOperatingHours(shop, request.getAppoitmentDate());
+      //aca vamos a debuggear para ver si encontramos el error
+      System.out.println("=== APPOINTMENT DATA DEBUG ===");
+      System.out.println("Appointment Date: " + request.getAppointmentDate());
+      System.out.println("Appointment Duration: " + request.getAppointmentTime());
+      System.out.println("Shop opening time: " + shop.getOpeningTime());
+      System.out.println("Shop closing time: " + shop.getClosingTime());
+      if (request.getAppointmentTime() != null) {
+         validateShopOperatingHours(shop, request.getAppointmentDate());
+      }
+      
+
    } catch (FeignException.NotFound e) {
      throw new ResourceNotFoundException("Shop not found");
    } 
@@ -70,7 +80,7 @@ public AppointmentResponse createAppointment(AppointmentCreateRequest request, L
      validateAppointmentConflicts(request);
      
      //validar que la fecha no sea muy lejana (por ej, como maximo 1 mes)
-      validateAppointmentDateRange(request.getAppoitmentDate());
+      validateAppointmentDateRange(request.getAppointmentDate());
 
       Appointment appointment = new Appointment();
       appointment.setClientId(clientId);
@@ -78,7 +88,7 @@ public AppointmentResponse createAppointment(AppointmentCreateRequest request, L
       appointment.setServiceName(request.getServiceName());
       appointment.setServiceDescription(request.getServiceDescription());
       appointment.setServicePrice(request.getServicePrice());
-      appointment.setAppointmentDate(request.getAppoitmentDate());
+      appointment.setAppointmentDate(request.getAppointmentDate());
       appointment.setAppointmentDuration(request.getAppointmentDuration());
       appointment.setClientNotes(request.getClientNotes());
       appointment.setStatus(request.getStatus());
@@ -133,8 +143,8 @@ public List <AppointmentResponse> getAppointmentsByStatus(AppointmentStatus stat
    .toList();
 }
 
-public List <AppointmentResponse> getAppointmentsByDateRange(Long shopId, LocalDateTime startTime, LocalDateTime endTime){
-    List <Appointment> appointments = appointmentRepository.findAppointmentsBetweenDates(shopId, startTime, endTime);
+public List <AppointmentResponse> getAppointmentsByDateRange(Long shopId, LocalDate startDate, LocalDate endDate){
+    List <Appointment> appointments = appointmentRepository.findAppointmentsBetweenDates(shopId, startDate, endDate);
     return appointments.stream().map(appointmentMapper::toResponse).toList();
 }
 
@@ -218,21 +228,38 @@ public void deleteAppointment(Long id, Long userId){
 
 
 
-  public void validateShopOperatingHours(ShopDto shop, LocalDateTime appointmentDate){
-   LocalTime appointmenTime = appointmentDate.toLocalTime();
-   LocalTime openingTime = LocalTime.parse(shop.getOpeningTime());
-   LocalTime closingTime = LocalTime.parse(shop.getClosingTime());
+  public void validateShopOperatingHours(ShopDto shop, LocalTime appointmentTime){
+   //metemos un poco de debug para ver donde esta el error exactamente 
+   System.out.println("=== VALIDATING SHOP HOURS ===");
+    System.out.println("Shop opening time: " + shop.getOpeningTime());
+    System.out.println("Shop closing time: " + shop.getClosingTime());
+    LocalTime appointmenTime = appointmentTime;
+    System.out.println("Appointment time: " + appointmenTime);
+    //deberiamos tambien validar que los horarios no sean nulos o esten vacios
+    if (shop.getOpeningTime() == null || shop.getOpeningTime().isEmpty()) {
+      throw new IllegalArgumentException("Shop opening time is not configured");
+    }
+    if (shop.getClosingTime() == null || shop.getClosingTime().isEmpty()) {
+      throw new IllegalArgumentException("Shop closing time is not configured");
+    }
+    try {
+    LocalTime openingTime = LocalTime.parse(shop.getOpeningTime());
+    LocalTime closingTime = LocalTime.parse(shop.getClosingTime());
 
-   if (appointmenTime.isBefore(openingTime) || appointmenTime.isAfter(closingTime)) {
+    if (appointmenTime.isBefore(openingTime) || appointmenTime.isAfter(closingTime)) {
       throw new BusinessException("The appointment is out of business hours.");
    }
+    } catch (Exception e) {
+      System.out.println("Error parsing shop hours ");
+      throw new IllegalArgumentException("Invalid shop operating hours format"); 
+    }
   } 
   
   public void validateAppointmentConflicts(AppointmentCreateRequest request){
    List <Appointment> existingAppointments = appointmentRepository.findAppointmentsBetweenDates(
       request.getShopId(), 
-      request.getAppoitmentDate(),
-      request.getAppoitmentDate().plusMinutes(request.getAppointmentDuration()));
+      request.getAppointmentDate(),
+      request.getAppointmentTime().plusMinutes(request.getAppointmentDuration()));
 
       if (existingAppointments.isEmpty()) {
          throw new BusinessException("There is already an appointment at that time.");
