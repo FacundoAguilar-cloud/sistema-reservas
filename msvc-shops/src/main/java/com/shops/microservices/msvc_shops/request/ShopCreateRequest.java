@@ -16,34 +16,34 @@ import lombok.Data;
 
 @Data
 public class ShopCreateRequest {
-@NotBlank(message = "Shop name is mandatory")
-@Size(min = 2, max = 100, message = "Size must be between 2 and 100 characters")
+@NotBlank(message = "Shop name is mandatory.")
+@Size(min = 2, max = 100, message = "Size must be between 2 and 100 characters.")
 @Column(nullable = false, length = 100) 
 private String name;
 
 @Column(length = 500)
 private String description;
 
-@NotBlank(message = "Adress is mandatory")
+@NotBlank(message = "Adress is mandatory.")
 private String adress;
 
-@NotBlank(message = "City is mandatory")
+@NotBlank(message = "City is mandatory.")
 @Column(nullable = false, length = 50)
 private String city;
 
-@NotBlank(message = "State is mandatory")
+@NotBlank(message = "State is mandatory.")
 @Column(nullable = false, length = 50)
 private String state;
 
-@NotBlank(message = "Country is mandatory")
+@NotBlank(message = "Country is mandatory.")
 @Column(nullable = false, length = 50)
 private String country;
 
-@Pattern(regexp = "^[+]?[0-9\\s\\-\\(\\)]{10,15}$", message = "Invalid phone number format")
+@Pattern(regexp = "^[+]?[0-9\\s\\-\\(\\)]{10,15}$", message = "Invalid phone number format.")
 @Column(length = 20)
 private String phone;
 
-@NotBlank(message = "Invalid email")
+@NotBlank(message = "Invalid email.")
 @Email
 private String email;
 
@@ -59,9 +59,13 @@ public enum WeekSchedule {
     SATURDAY(LocalTime.of(8, 0), LocalTime.of(8, 0));
 
 
+     @Column(name = "opening_time")
+     @NotBlank(message = "Opening time is required.")
+	 private final LocalTime openingTime;
 
-	private final LocalTime openingTime;
-	private final LocalTime closingTime;
+     @Column(name = "closing_time")
+     @NotBlank(message = "Closing time is required.")
+	 private final LocalTime closingTime;
 
 	WeekSchedule(LocalTime openingTime, LocalTime closingTime) {
 		this.openingTime = openingTime;

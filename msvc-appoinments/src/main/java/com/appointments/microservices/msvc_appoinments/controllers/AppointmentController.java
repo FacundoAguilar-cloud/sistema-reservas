@@ -9,14 +9,11 @@ import com.appointments.microservices.msvc_appoinments.request.AppointmentCreate
 import com.appointments.microservices.msvc_appoinments.request.AppointmentUpdateRequest;
 import com.appointments.microservices.msvc_appoinments.response.AppointmentResponse;
 import com.appointments.microservices.msvc_appoinments.servicies.AppointmentServiceIMPL;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
-
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -85,9 +82,9 @@ public ResponseEntity<List<AppointmentResponse>> getAppointmentByStatus(@Request
 @PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> getAppointmentsByDateRange(
     @PathVariable Long shopId, 
-    @RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
-    @RequestParam("endTime")  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)   LocalDateTime endTime) {
-    List <AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByDateRange(shopId, startTime, endTime);
+    @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDate startDate,
+    @RequestParam("endDate")  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)   LocalDate endTime) {
+    List <AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByDateRange(shopId, startDate, endTime);
     return ResponseEntity.ok(appointments);
 }
 

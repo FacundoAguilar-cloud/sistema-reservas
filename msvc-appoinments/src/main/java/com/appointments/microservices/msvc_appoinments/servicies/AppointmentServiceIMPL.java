@@ -1,7 +1,6 @@
 package com.appointments.microservices.msvc_appoinments.servicies;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -28,7 +27,7 @@ List <AppointmentResponse> getAppointmentsByBarber(Long barberId);
 
 List <AppointmentResponse> getAppointmentsByStatus(AppointmentStatus status);
 
-List <AppointmentResponse> getAppointmentsByDateRange(Long shopId, LocalDateTime startTime, LocalDateTime endTime);
+List <AppointmentResponse> getAppointmentsByDateRange(Long shopId, LocalDate startDate, LocalDate endDate);
 
 AppointmentResponse createAppointment(AppointmentCreateRequest request, Long clientId);
 

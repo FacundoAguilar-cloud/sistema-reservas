@@ -2,6 +2,7 @@ package com.appointments.microservices.msvc_appoinments.repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
@@ -28,8 +29,9 @@ List <Appointment> findAppointmentsByClientIdAndStatus(Long clientId, Appointmen
 @Query("SELECT a FROM Appointment a WHERE a.clientId = :clientId AND a.appointmentDate BETWEEN :startDate AND :endDate")
 List <Appointment> findAppointmentsBetweenDates(
 @Param("clientId") Long clientId, 
-@Param("startDate") LocalDate startDate, 
-@Param("endDate") LocalDate endDate); 
+@Param("startTime") LocalTime startTime, 
+@Param("endTime") LocalTime endTime,
+@Param ("appointmentDate") LocalDate appointmentDate); 
 
 
 //otro meotodo que busque citas pero por barberia entre cierta fecha (no está en uso)
@@ -60,15 +62,12 @@ List <Appointment> findAppointmentConflictsForShop(
 );
 
 
-//buscar citas que vienen en un futuro al dia en que se hace la consulta (QUEDA COMENTADO, NO LO VAMOS A USAR POR AHORA)
-
-/*List <Appointment> findUpcomingAppointments(
-@Param ("startTime") LocalDateTime startTime,
-@Param ("endTime") LocalDateTime endTime     
+@Query("SELECT a FROM Appointment a WHERE a.shopId = :shopId AND a.appointmentDate BETWEEN :startDate AND :endDate")
+List<Appointment> findAppointmentsByShopAndDateRange(
+    @Param("shopId") Long shopId,
+    @Param("startDate") LocalDate startDate,
+    @Param("endDate") LocalDate endDate
 );
-
-
-*/
 
 
 

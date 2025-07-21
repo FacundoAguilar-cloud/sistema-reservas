@@ -67,7 +67,7 @@ public AppointmentResponse createAppointment(AppointmentCreateRequest request, L
       System.out.println("Shop opening time: " + shop.getOpeningTime());
       System.out.println("Shop closing time: " + shop.getClosingTime());
       if (request.getAppointmentTime() != null) {
-         validateShopOperatingHours(shop, request.getAppointmentDate());
+         validateShopOperatingHours(shop, request.getAppointmentTime());
       }
       
 
@@ -144,7 +144,7 @@ public List <AppointmentResponse> getAppointmentsByStatus(AppointmentStatus stat
 }
 
 public List <AppointmentResponse> getAppointmentsByDateRange(Long shopId, LocalDate startDate, LocalDate endDate){
-    List <Appointment> appointments = appointmentRepository.findAppointmentsBetweenDates(shopId, startDate, endDate);
+    List <Appointment> appointments = appointmentRepository.findAppointmentsByShopAndDateRange(shopId, startDate, endDate);
     return appointments.stream().map(appointmentMapper::toResponse).toList();
 }
 
@@ -236,10 +236,10 @@ public void deleteAppointment(Long id, Long userId){
     LocalTime appointmenTime = appointmentTime;
     System.out.println("Appointment time: " + appointmenTime);
     //deberiamos tambien validar que los horarios no sean nulos o esten vacios
-    if (shop.getOpeningTime() == null || shop.getOpeningTime().isEmpty()) {
+    if (shop.getOpeningTime() == null || shop.getOpeningTime().trim().isEmpty()) {
       throw new IllegalArgumentException("Shop opening time is not configured");
     }
-    if (shop.getClosingTime() == null || shop.getClosingTime().isEmpty()) {
+    if (shop.getClosingTime() == null || shop.getClosingTime().trim().isEmpty()) {
       throw new IllegalArgumentException("Shop closing time is not configured");
     }
     try {
@@ -256,19 +256,21 @@ public void deleteAppointment(Long id, Long userId){
   } 
   
   public void validateAppointmentConflicts(AppointmentCreateRequest request){
+   // Assuming you want to check for appointments on the same day
    List <Appointment> existingAppointments = appointmentRepository.findAppointmentsBetweenDates(
       request.getShopId(), 
-      request.getAppointmentDate(),
-      request.getAppointmentTime().plusMinutes(request.getAppointmentDuration()));
+      request.getAppointmentTime(), // start time
+      request.getAppointmentTime().plusMinutes(request.getAppointmentDuration()), // end time
+      request.getAppointmentDate());
 
-      if (existingAppointments.isEmpty()) {
+      if (!existingAppointments.isEmpty()) {
          throw new BusinessException("There is already an appointment at that time.");
       }
   }
 
-  public void validateAppointmentDateRange(LocalDateTime appointmentDate){
-   LocalDateTime now = LocalDateTime.now();
-   LocalDateTime maxDate = now.plusMonths(1);
+  public void validateAppointmentDateRange(LocalDate appointmentDate){
+   LocalDate now = LocalDate.now();
+   LocalDate maxDate = now.plusMonths(1);
 
    if (appointmentDate.isBefore(now)) {
       throw new BusinessException("Cannot create appointments in the past");
@@ -295,8 +297,8 @@ public void deleteAppointment(Long id, Long userId){
 
   }
 
-  public void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDateTime newDate, Integer newDuration ){
-   LocalDateTime starTime = newDate;
+  public void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDate newDate, Integer newDuration ){
+   LocalDateTime starTime = newDate.atStartOfDay();
    LocalDateTime endTime = starTime.plusMinutes(newDuration != null ? newDuration : appointment.getAppointmentDuration());
 
    List <Appointment> conflicts; 

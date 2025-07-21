@@ -78,8 +78,10 @@ public enum WeekSchedule {
     SATURDAY(LocalTime.of(8, 0), LocalTime.of(8, 0));
 
 
-
+    @Column(name = "opening_time")
 	private final LocalTime openingTime;
+    
+    @Column(name = "closing_time")
 	private final LocalTime closingTime;
 
 	WeekSchedule(LocalTime openingTime, LocalTime closingTime) {
