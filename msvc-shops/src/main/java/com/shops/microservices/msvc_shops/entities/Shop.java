@@ -5,6 +5,8 @@ package com.shops.microservices.msvc_shops.entities;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -79,9 +81,11 @@ public enum WeekSchedule {
 
 
     @Column(name = "opening_time")
+    @JsonFormat(pattern = "HH:mm")
 	private final LocalTime openingTime;
     
     @Column(name = "closing_time")
+    @JsonFormat(pattern = "HH:mm")
 	private final LocalTime closingTime;
 
 	WeekSchedule(LocalTime openingTime, LocalTime closingTime) {

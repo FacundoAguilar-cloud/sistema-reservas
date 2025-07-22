@@ -36,55 +36,55 @@ public class AppointmentController {
 private final AppointmentRepository appointmentRepository;
 private final AppointmentServiceIMPL appointmentServiceIMPL;    
 
-@GetMapping("/get-by-id")
+@GetMapping("/get-by-id/{id}/{userId}") //funciona ok
 @PreAuthorize("isAuthenticated()")
-public ResponseEntity <AppointmentResponse> getAppointmentById(@RequestParam Long id, @RequestParam Long userId) {
+public ResponseEntity <AppointmentResponse> getAppointmentById(@PathVariable Long id, @PathVariable Long userId) {
     AppointmentResponse appointment = appointmentServiceIMPL.getAppointmentById(id, userId);
 
     return ResponseEntity.ok(appointment);
 
 }
 
-@GetMapping("/all")
+@GetMapping("/all") //funciona ok
 public ResponseEntity<List<AppointmentResponse>> getAllAppointments() {
     List<AppointmentResponse> appointments = appointmentServiceIMPL.getAllAppointment();
     return ResponseEntity.ok(appointments);
 }
 
-@GetMapping("/by-client")
+@GetMapping("/by-client/{clientId}") //funca perfecto
 @PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> getAppointmentsByClient(@PathVariable Long clientId) {
     List<AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByClient(clientId);
     return ResponseEntity.ok(appointments);
 }
 
-@GetMapping("/by-shop")
+@GetMapping("/by-shop/{shopId}") //funca ok
 @PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> GetAppointmentsByShop(@PathVariable Long shopId) {
     List<AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByShop(shopId);
     return ResponseEntity.ok(appointments);
 }
-@GetMapping("/by-barber")
+@GetMapping("/by-barber/{barberId}") //funca ok
 @PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> getAppointmentsByBarber(@PathVariable Long barberId) {
     List<AppointmentResponse>  appointments = appointmentServiceIMPL.getAppointmentsByBarber(barberId);
     return ResponseEntity.ok(appointments);
 }
 
-@GetMapping("/by-status")
+@GetMapping("/by-status") //funca
 @PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> getAppointmentByStatus(@RequestParam AppointmentStatus status) {
     List<AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByStatus(status);
     return ResponseEntity.ok(appointments);
 }
 
-@GetMapping("/by-date-range")
+@GetMapping("/by-date-range/{shopId}") //funciona perfecto
 @PreAuthorize("isAuthenticated()")
 public ResponseEntity<List<AppointmentResponse>> getAppointmentsByDateRange(
     @PathVariable Long shopId, 
-    @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDate startDate,
-    @RequestParam("endDate")  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)   LocalDate endTime) {
-    List <AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByDateRange(shopId, startDate, endTime);
+    @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate startDate,
+    @RequestParam("endDate")  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)   LocalDate endDate) {
+    List <AppointmentResponse> appointments = appointmentServiceIMPL.getAppointmentsByDateRange(shopId, startDate, endDate);
     return ResponseEntity.ok(appointments);
 }
 

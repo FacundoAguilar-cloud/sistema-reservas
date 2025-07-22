@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import com.appointments.microservices.msvc_appoinments.entities.AppointmentStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.DecimalMin;
@@ -36,9 +37,11 @@ private BigDecimal servicePrice;
 
 @Column(name = "appointment_date", nullable = false)
 @Future(message = "Date must be future")
+@JsonFormat(pattern = "yyyy-MM-dd")
 private LocalDate appointmentDate;   
 
 @Column(name = "appointment_time", nullable = false)
+@JsonFormat(pattern = "HH:mm:ss")
 private LocalTime appointmentTime;
 
 @Min(value = 15, message = "The minimun duration is 15 minutes")

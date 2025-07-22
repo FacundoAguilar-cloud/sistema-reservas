@@ -1,5 +1,9 @@
 package com.appointments.microservices.msvc_appoinments.dto;
 
+import java.time.LocalTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,7 +17,12 @@ public class ShopDto {
  private String name;
  private String address;
  private String phone;
- private String openingTime;
- private String closingTime;
+ 
+ @JsonFormat(pattern = "HH:mm")
+ private LocalTime openingTime;
+
+ @JsonFormat(pattern = "HH:mm")
+ private LocalTime closingTime;
+
  private String status;
 }

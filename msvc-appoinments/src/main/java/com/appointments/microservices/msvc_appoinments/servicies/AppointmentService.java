@@ -5,12 +5,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.appointments.microservices.msvc_appoinments.client.ShopClient;
 import com.appointments.microservices.msvc_appoinments.client.UserClient;
 import com.appointments.microservices.msvc_appoinments.config.AppointmentMapper;
+import com.appointments.microservices.msvc_appoinments.config.ShopMapper;
 import com.appointments.microservices.msvc_appoinments.dto.ShopDto;
 import com.appointments.microservices.msvc_appoinments.dto.UserDto;
 import com.appointments.microservices.msvc_appoinments.entities.Appointment;
@@ -38,6 +40,7 @@ private final AppointmentRepository appointmentRepository;
 private final AppointmentMapper appointmentMapper;
 private final UserClient userClient;
 private final ShopClient shopClient;
+private final ShopMapper shopMapper;
 
 @Transactional
 public AppointmentResponse createAppointment(AppointmentCreateRequest request, Long clientId){
@@ -56,17 +59,19 @@ public AppointmentResponse createAppointment(AppointmentCreateRequest request, L
         //Aca vamos a validar la existencia de la tienda
 
    try {
-      ShopDto shop = shopClient.getShopById(request.getShopId());
-      if (shop == null) {
+      Map <String, Object> shopData = shopClient.getShopById(request.getShopId());
+      if (shopData == null) {
          throw new ResourceNotFoundException("Shop not found");
       }
       //aca vamos a debuggear para ver si encontramos el error
       System.out.println("=== APPOINTMENT DATA DEBUG ===");
       System.out.println("Appointment Date: " + request.getAppointmentDate());
       System.out.println("Appointment Duration: " + request.getAppointmentTime());
-      System.out.println("Shop opening time: " + shop.getOpeningTime());
-      System.out.println("Shop closing time: " + shop.getClosingTime());
+      System.out.println("Shop opening time: " + shopData.get("openingTime"));
+      System.out.println("Shop closing time: " + shopData.get("closingTime"));
       if (request.getAppointmentTime() != null) {
+       
+         ShopDto shop = shopMapper.mapToShopDto(shopData);
          validateShopOperatingHours(shop, request.getAppointmentTime());
       }
       
@@ -236,7 +241,7 @@ public void deleteAppointment(Long id, Long userId){
     LocalTime appointmenTime = appointmentTime;
     System.out.println("Appointment time: " + appointmenTime);
     //deberiamos tambien validar que los horarios no sean nulos o esten vacios
-    if (shop.getOpeningTime() == null || shop.getOpeningTime().trim().isEmpty()) {
+    if (shop.getOpeningTime() == null || shop.getOpeningTime().isEmpty()) {
       throw new IllegalArgumentException("Shop opening time is not configured");
     }
     if (shop.getClosingTime() == null || shop.getClosingTime().trim().isEmpty()) {
@@ -256,7 +261,7 @@ public void deleteAppointment(Long id, Long userId){
   } 
   
   public void validateAppointmentConflicts(AppointmentCreateRequest request){
-   // Assuming you want to check for appointments on the same day
+   
    List <Appointment> existingAppointments = appointmentRepository.findAppointmentsBetweenDates(
       request.getShopId(), 
       request.getAppointmentTime(), // start time
@@ -285,7 +290,8 @@ public void deleteAppointment(Long id, Long userId){
    if (appointment.getClientId().equals(userId)) {
       return;
    }
-   ShopDto shop = shopClient.getShopById(appointment.getShopId());
+   Map<String, Object> shopData = shopClient.getShopById(appointment.getShopId());
+   ShopDto shop = shopMapper.mapToShopDto(shopData);
    if (shop != null && shop.getOwnerId().equals(userId)) {
       return;
    }
