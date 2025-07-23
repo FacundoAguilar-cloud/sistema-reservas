@@ -26,12 +26,12 @@ List <Appointment> findAppointmentsByStatus(AppointmentStatus status);
 
 List <Appointment> findAppointmentsByClientIdAndStatus(Long clientId, AppointmentStatus status);
 
-@Query("SELECT a FROM Appointment a WHERE a.clientId = :clientId AND a.appointmentDate BETWEEN :startDate AND :endDate")
+@Query("SELECT a FROM Appointment a WHERE a.shopId = :shopId AND a.appointmentDate = :appointmentDate AND a.appointmentTime BETWEEN :startTime AND :endTime") //esto es lo que cambiamos y tenemos que ver si funciona o no
 List <Appointment> findAppointmentsBetweenDates(
-@Param("clientId") Long clientId, 
+@Param("shopId") Long shopId, 
+@Param ("appointmentDate") LocalDate appointmentDate, 
 @Param("startTime") LocalTime startTime, 
-@Param("endTime") LocalTime endTime,
-@Param ("appointmentDate") LocalDate appointmentDate); 
+@Param("endTime") LocalTime endTime);
 
 
 //otro meotodo que busque citas pero por barberia entre cierta fecha (no está en uso)

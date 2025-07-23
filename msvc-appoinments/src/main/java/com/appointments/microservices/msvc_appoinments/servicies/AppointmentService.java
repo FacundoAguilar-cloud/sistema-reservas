@@ -241,15 +241,17 @@ public void deleteAppointment(Long id, Long userId){
     LocalTime appointmenTime = appointmentTime;
     System.out.println("Appointment time: " + appointmenTime);
     //deberiamos tambien validar que los horarios no sean nulos o esten vacios
-    if (shop.getOpeningTime() == null || shop.getOpeningTime().isEmpty()) {
-      throw new IllegalArgumentException("Shop opening time is not configured");
+    if (shop.getOpeningTime() == null) {
+        System.out.println("Warning: Shop opening time not configured, skipping validation.");
+        return;
     }
-    if (shop.getClosingTime() == null || shop.getClosingTime().trim().isEmpty()) {
-      throw new IllegalArgumentException("Shop closing time is not configured");
+    if (shop.getClosingTime() == null) {
+        System.out.println("Warning: Shop closing time not configured, skipping validation.");
+        return;
     }
     try {
-    LocalTime openingTime = LocalTime.parse(shop.getOpeningTime());
-    LocalTime closingTime = LocalTime.parse(shop.getClosingTime());
+    LocalTime openingTime = shop.getOpeningTime();
+    LocalTime closingTime = shop.getClosingTime();
 
     if (appointmenTime.isBefore(openingTime) || appointmenTime.isAfter(closingTime)) {
       throw new BusinessException("The appointment is out of business hours.");
@@ -264,13 +266,14 @@ public void deleteAppointment(Long id, Long userId){
    
    List <Appointment> existingAppointments = appointmentRepository.findAppointmentsBetweenDates(
       request.getShopId(), 
+      request.getAppointmentDate(),
       request.getAppointmentTime(), // start time
-      request.getAppointmentTime().plusMinutes(request.getAppointmentDuration()), // end time
-      request.getAppointmentDate());
-
-      if (!existingAppointments.isEmpty()) {
-         throw new BusinessException("There is already an appointment at that time.");
-      }
+      request.getAppointmentTime().plusMinutes(request.getAppointmentDuration()) // end time
+   );
+     
+   if (!existingAppointments.isEmpty()) {
+      throw new BusinessException("There is already an appointment at that time.");
+   }
   }
 
   public void validateAppointmentDateRange(LocalDate appointmentDate){

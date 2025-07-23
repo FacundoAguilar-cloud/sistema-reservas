@@ -2,7 +2,6 @@ package com.appointments.microservices.msvc_appoinments.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import jakarta.persistence.Column;

@@ -21,8 +21,8 @@ public class ShopMapper {
         shopDto.setName(extractString(shopData, "name"));
         shopDto.setAddress(extractString(shopData, "address"));
         shopDto.setPhone(extractString(shopData, "phone"));
-        shopDto.setOpeningTime(extractString(shopData, "openingTime"));
-        shopDto.setClosingTime(extractString(shopData, "closingTime"));
+        shopDto.setOpeningTime(parseLocalTime(extractString(shopData, "openingTime")));
+        shopDto.setClosingTime(parseLocalTime(extractString(shopData, "closingTime")));
         shopDto.setStatus(extractString(shopData, "status"));
         
         return shopDto;
@@ -49,6 +49,17 @@ public class ShopMapper {
     private String extractString(Map<String, Object> data, String key) {
         Object value = data.get(key);
         return value != null ? value.toString() : null;
+    }
+
+    private java.time.LocalTime parseLocalTime(String timeString) {
+        if (timeString == null || timeString.isEmpty()) {
+            return null;
+        }
+        try {
+            return java.time.LocalTime.parse(timeString);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
 
