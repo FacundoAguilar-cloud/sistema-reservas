@@ -63,19 +63,19 @@ private String clientNotes;
 @Column(name = "barber_notes", nullable = false)
 private String barberNotes; 
 
-@Column(name = "cancellation_reason", nullable = false)
+@Column(name = "cancellation_reason", nullable = true)
 private String cancellationReason;
 
-@Column(name = "cancellated_by", nullable = false)
+@Column(name = "cancellated_by", nullable = true)
 private String cancellatedBy;
 
-@Column(name = "cancelled_at", nullable = false)
+@Column(name = "cancelled_at", nullable = true)
 private String cancelledAt;
 
-@Column(name = "created_at", nullable = false)
+@Column(name = "created_at", nullable = true)
 private String createdAt;
 
-@Column(name = "updated_at", nullable = false)
+@Column(name = "updated_at", nullable = true)
 private String updatedAt;
 
 // aca quizas deberiamos poner otra info importante que venga directamente de otros msvc(nombre, telefono, email, nombre de la tienda, etc)

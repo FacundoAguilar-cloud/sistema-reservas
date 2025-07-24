@@ -59,14 +59,15 @@ public AppointmentResponse createAppointment(AppointmentCreateRequest request, L
         //Aca vamos a validar la existencia de la tienda
 
    try {
-      Map <String, Object> shopData = shopClient.getShopById(request.getShopId());
+     Map<String, Object> shopData = shopClient.getShopById(request.getShopId());
       if (shopData == null) {
          throw new ResourceNotFoundException("Shop not found");
       }
       //aca vamos a debuggear para ver si encontramos el error
       System.out.println("=== APPOINTMENT DATA DEBUG ===");
       System.out.println("Appointment Date: " + request.getAppointmentDate());
-      System.out.println("Appointment Duration: " + request.getAppointmentTime());
+      System.out.println("Appointment Time: " + request.getAppointmentTime());
+      System.out.println("Appointment duration" + request.getAppointmentDuration());
       System.out.println("Shop opening time: " + shopData.get("openingTime"));
       System.out.println("Shop closing time: " + shopData.get("closingTime"));
       if (request.getAppointmentTime() != null) {
@@ -90,12 +91,15 @@ public AppointmentResponse createAppointment(AppointmentCreateRequest request, L
       Appointment appointment = new Appointment();
       appointment.setClientId(clientId);
       appointment.setShopId(request.getShopId());
+      appointment.setBarberId(request.getBarberId());
       appointment.setServiceName(request.getServiceName());
       appointment.setServiceDescription(request.getServiceDescription());
       appointment.setServicePrice(request.getServicePrice());
       appointment.setAppointmentDate(request.getAppointmentDate());
+      appointment.setAppointmentTime(request.getAppointmentTime());
       appointment.setAppointmentDuration(request.getAppointmentDuration());
       appointment.setClientNotes(request.getClientNotes());
+      appointment.setBarberNotes(request.getBarberNotes());
       appointment.setStatus(request.getStatus());
 
       Appointment savedAppointment = appointmentRepository.save(appointment);
@@ -160,8 +164,12 @@ public AppointmentResponse updateAppointment(AppointmentUpdateRequest request, L
 
  //aca deberiamos tener metodos que verifiquen tanto los permisos que tiene el usuario y si el appointment puede ser modificado  
  validateUserPermissions(appointment, userId); 
+ if (request.getShopId() != null) {
+   appointment.setShopId(request.getShopId());
+ }
+ 
  if (request.getBarberId() != null) {
-   appointment.setBarberId(request.getBarberId());
+   appointment.setBarberId(request.getBarberId()); 
  } 
  if (request.getServiceName() != null) {
    appointment.setServiceName(request.getServiceName());
@@ -172,11 +180,11 @@ public AppointmentResponse updateAppointment(AppointmentUpdateRequest request, L
  if (request.getServicePrice() != null) {
    appointment.setServicePrice(request.getServicePrice());
  }
- if (request.getAppoitmentDate() != null) {
-   appointment.setAppointmentDate(request.getAppoitmentDate());
+ if (request.getAppointmentDate() != null) {
+   appointment.setAppointmentDate(request.getAppointmentDate());
    //aca habria que validar conflictos con la nueva fecha
-   validateAppointmentDateRange(request.getAppoitmentDate());
-   validateAppointmentConflictsForUpdate(appointment, request.getAppoitmentDate(), request.getAppointmentDuration());
+   validateAppointmentDateRange(request.getAppointmentDate());
+   validateAppointmentConflictsForUpdate(appointment, request.getAppointmentDate(), request.getAppointmentDuration());
  }
  if (request.getAppointmentDuration() != null) {
    appointment.setAppointmentDuration(request.getAppointmentDuration());
@@ -265,7 +273,7 @@ public void deleteAppointment(Long id, Long userId){
   public void validateAppointmentConflicts(AppointmentCreateRequest request){
    
    List <Appointment> existingAppointments = appointmentRepository.findAppointmentsBetweenDates(
-      request.getShopId(), 
+      request.getClientId(), 
       request.getAppointmentDate(),
       request.getAppointmentTime(), // start time
       request.getAppointmentTime().plusMinutes(request.getAppointmentDuration()) // end time
@@ -307,8 +315,8 @@ public void deleteAppointment(Long id, Long userId){
   }
 
   public void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDate newDate, Integer newDuration ){
-   LocalDateTime starTime = newDate.atStartOfDay();
-   LocalDateTime endTime = starTime.plusMinutes(newDuration != null ? newDuration : appointment.getAppointmentDuration());
+   LocalDate starTime = newDate.atStartOfDay();
+   LocalDate endTime = starTime.plusMinutes(newDuration != null ? newDuration : appointment.getAppointmentDuration());
 
    List <Appointment> conflicts; 
 

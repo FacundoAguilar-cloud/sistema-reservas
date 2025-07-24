@@ -22,7 +22,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppointmentCreateRequest {
-private Long shopId; 
+
+private Long shopId;
+
+private Long barberId;
+    
+private Long clientId; 
 //VER SI FALTA COMPLETAR ESTO, ATENTO
 
 @Size(min = 2, max = 100, message = "Name of the service must be betweem 2 and 100 characters")

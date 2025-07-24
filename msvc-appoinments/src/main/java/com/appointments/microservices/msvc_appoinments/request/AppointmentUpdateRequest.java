@@ -4,12 +4,15 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.appointments.microservices.msvc_appoinments.entities.AppointmentStatus;
+
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,7 +39,7 @@ private BigDecimal servicePrice;
 
 @Column(name = "appointment_date", nullable = false)
 @Future(message = "Date must be future")
-private LocalDate appoitmentDate;
+private LocalDate appointmentDate;
 
 @Column(name = "appointment_time", nullable = false)
 private LocalTime appointmentTime;
@@ -50,5 +53,8 @@ private String clientNotes;
 
 @Size(max = 700, message = "Barber notes cannot exceed 700 characters")
 private String barberNotes; 
+
+@NotNull(message = "Status is mandatory.")
+private AppointmentStatus status;
 
 }

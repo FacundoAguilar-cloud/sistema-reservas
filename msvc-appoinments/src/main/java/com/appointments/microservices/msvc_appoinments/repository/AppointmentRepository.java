@@ -26,9 +26,9 @@ List <Appointment> findAppointmentsByStatus(AppointmentStatus status);
 
 List <Appointment> findAppointmentsByClientIdAndStatus(Long clientId, AppointmentStatus status);
 
-@Query("SELECT a FROM Appointment a WHERE a.shopId = :shopId AND a.appointmentDate = :appointmentDate AND a.appointmentTime BETWEEN :startTime AND :endTime") //esto es lo que cambiamos y tenemos que ver si funciona o no
+@Query("SELECT a FROM Appointment a WHERE a.clientId = :clientId AND a.appointmentDate = :appointmentDate AND a.appointmentTime BETWEEN :startTime AND :endTime") //esto es lo que cambiamos y tenemos que ver si funciona o no
 List <Appointment> findAppointmentsBetweenDates(
-@Param("shopId") Long shopId, 
+@Param("clientId") Long clientId,
 @Param ("appointmentDate") LocalDate appointmentDate, 
 @Param("startTime") LocalTime startTime, 
 @Param("endTime") LocalTime endTime);
@@ -48,8 +48,8 @@ List <Appointment> findAppointmentsBetweenDates(
 "AND a.status IN ('PENDING', 'CONFIRMED')")
 List <Appointment> findBarberAppointmentConflicts(
 @Param("barberId") Long barberId,
-@Param ("startTime") LocalDateTime startTime,
-@Param ("endTime") LocalDateTime endTime   
+@Param ("startTime") LocalDate startTime,
+@Param ("endTime") LocalDate endTime   
 );
 
 @Query("SELECT a FROM Appointment a WHERE a.shopId = :shopId " +
