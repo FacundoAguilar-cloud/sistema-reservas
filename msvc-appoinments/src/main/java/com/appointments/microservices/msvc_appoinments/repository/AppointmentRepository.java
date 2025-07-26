@@ -1,7 +1,6 @@
 package com.appointments.microservices.msvc_appoinments.repository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -42,23 +41,28 @@ List <Appointment> findAppointmentsBetweenDates(
     LocalDateTime endDate);
 */
 
-//otro metodo que evite posibles conflictos a la hora de reservar un turno con un barbero/estilista que ya está ocupado
-@Query("SELECT a FROM Appointment a WHERE a.barberId = :barberId " +
-"AND a.appointmentDate BETWEEN :startTime AND :endTime " +
-"AND a.status IN ('PENDING', 'CONFIRMED')")
-List <Appointment> findBarberAppointmentConflicts(
-@Param("barberId") Long barberId,
-@Param ("startTime") LocalDate startTime,
-@Param ("endTime") LocalDate endTime   
+@Query("SELECT a FROM Appointment a WHERE a.barberId = :barberId " + 
+       "AND a.appointmentDate = :appointmentDate " +
+       "AND a.appointmentTime < :endTime " +
+       "AND FUNCTION('ADDTIME', a.appointmentTime, FUNCTION('SEC_TO_TIME', a.appointmentDuration * 60)) > :startTime " +
+       "AND a.status IN ('PENDING', 'CONFIRMED')")
+List<Appointment> findBarberAppointmentConflicts(
+    @Param("barberId") Long barberId,
+    @Param("appointmentDate") LocalDate appointmentDate,
+    @Param("startTime") LocalTime startTime,
+    @Param("endTime") LocalTime endTime
 );
 
-@Query("SELECT a FROM Appointment a WHERE a.shopId = :shopId " +
-"AND a.appointmentDate BETWEEN :startTime AND :endTime " +
+@Query("SELECT a FROM Appointment a WHERE a.shopId = :shopId " + //este está ok
+"AND a.appointmentDate = :appointmentDate " +
+"AND a.appointmentTime < :endTime " +
+"AND FUNCTION('ADDTIME', a.appointmentTime, FUNCTION('SEC_TO_TIME', a.appointmentDuration * 60)) > :startTime " +
 "AND a.status != 'CANCELLED'")
 List <Appointment> findAppointmentConflictsForShop(
 @Param ("shopId") Long shopId,
-@Param ("startTime") LocalDateTime starTime,
-@Param ("endTime") LocalDateTime endTime    
+@Param ("appointmentDate") LocalDate  appointmentDate,
+@Param ("startTime") LocalTime starTime,
+@Param ("endTime") LocalTime endTime
 );
 
 

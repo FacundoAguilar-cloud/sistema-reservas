@@ -119,7 +119,7 @@ public ResponseEntity<AppointmentResponse> updateAppointment(
 }
 
 @PreAuthorize("hasAuthority('SHOP_OWNER')")
-@DeleteMapping("/delete/{appointmentId}")
+@DeleteMapping("/delete/{appointmentId}/{userId}")
 public ResponseEntity<AppointmentResponse> deleteAppointment(
     @PathVariable Long appointmentId,
     @PathVariable Long userId, //pasar la auth mediante header

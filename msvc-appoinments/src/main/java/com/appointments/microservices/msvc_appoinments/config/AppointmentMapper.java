@@ -45,6 +45,7 @@ public AppointmentResponse toResponse(Appointment appointment){
   appointmentResponse.setServiceName(appointment.getServiceName());
   appointmentResponse.setServiceDescription(appointment.getServiceDescription());
   appointmentResponse.setServicePrice(appointment.getServicePrice());
+  appointmentResponse.setAppointmentTime(appointment.getAppointmentTime());
   appointmentResponse.setAppointmentDate(appointment.getAppointmentDate());
   appointmentResponse.setDurationMinutes(appointment.getAppointmentDuration());
   appointmentResponse.setClientNotes(appointment.getClientNotes());

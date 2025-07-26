@@ -31,7 +31,7 @@ List <AppointmentResponse> getAppointmentsByDateRange(Long shopId, LocalDate sta
 
 AppointmentResponse createAppointment(AppointmentCreateRequest request, Long clientId);
 
-AppointmentResponse updateAppointment(AppointmentUpdateRequest request, Long id, Long userId); //VER si esto esta bien
+AppointmentResponse updateAppointment(AppointmentUpdateRequest request, Long id, Long userId); 
 
 AppointmentResponse changeAppointmentStatus(ChangeAppointmentStatusRequest request, Long id, Long userId);
 
@@ -45,7 +45,7 @@ void validateAppointmentDateRange(LocalDate appointmentDate);
 
 void validateUserPermissions(Appointment appointment, Long userId);
 
-void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDate newDate, Integer newDuration );
+void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDate newDate, LocalTime newTime,  Integer newDuration );
 
 
 

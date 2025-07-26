@@ -184,7 +184,7 @@ public AppointmentResponse updateAppointment(AppointmentUpdateRequest request, L
    appointment.setAppointmentDate(request.getAppointmentDate());
    //aca habria que validar conflictos con la nueva fecha
    validateAppointmentDateRange(request.getAppointmentDate());
-   validateAppointmentConflictsForUpdate(appointment, request.getAppointmentDate(), request.getAppointmentDuration());
+   validateAppointmentConflictsForUpdate(appointment, request.getAppointmentDate(), request.getAppointmentTime(), request.getAppointmentDuration());
  }
  if (request.getAppointmentDuration() != null) {
    appointment.setAppointmentDuration(request.getAppointmentDuration());
@@ -314,17 +314,21 @@ public void deleteAppointment(Long id, Long userId){
 
   }
 
-  public void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDate newDate, Integer newDuration ){
-   LocalDate starTime = newDate.atStartOfDay();
-   LocalDate endTime = starTime.plusMinutes(newDuration != null ? newDuration : appointment.getAppointmentDuration());
+  public void validateAppointmentConflictsForUpdate(Appointment appointment, LocalDate newDate , LocalTime newTime ,  Integer newDuration ){
+   LocalTime startTime = newTime;
+   LocalTime endTime = newTime.plusMinutes(newDuration != null ? newDuration : appointment.getAppointmentDuration());
 
    List <Appointment> conflicts; 
 
    if (appointment.getBarberId() != null) {
-      conflicts = appointmentRepository.findBarberAppointmentConflicts(appointment.getBarberId(), starTime, endTime);
+      conflicts = appointmentRepository.findBarberAppointmentConflicts(
+         appointment.getBarberId(),
+         newDate,
+         startTime,
+         endTime);
    }
    else{
-      conflicts = appointmentRepository.findAppointmentConflictsForShop(appointment.getShopId(), starTime, endTime);
+      conflicts = appointmentRepository.findAppointmentConflictsForShop(appointment.getShopId(),  newDate,  startTime,  endTime);
    }
    //aca tendriamos que excluir la cita actual que tratamos de esa lista de conflictos
 
