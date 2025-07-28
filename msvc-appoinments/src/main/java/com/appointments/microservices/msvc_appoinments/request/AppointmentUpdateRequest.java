@@ -2,6 +2,7 @@ package com.appointments.microservices.msvc_appoinments.request;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import com.appointments.microservices.msvc_appoinments.entities.AppointmentStatus;
@@ -56,5 +57,8 @@ private String barberNotes;
 
 @NotNull(message = "Status is mandatory.")
 private AppointmentStatus status;
+
+@Column(name = "appointment_date", nullable = false)
+private LocalDateTime updatedAt;
 
 }

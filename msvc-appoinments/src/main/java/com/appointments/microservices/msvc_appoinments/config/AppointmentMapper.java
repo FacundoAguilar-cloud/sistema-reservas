@@ -32,6 +32,9 @@ public Appointment toEntity(AppointmentCreateRequest request){
     appointment.setAppointmentDuration(request.getAppointmentDuration());
     appointment.setClientNotes(request.getClientNotes());
     appointment.setBarberNotes(request.getBarberNotes());
+    appointment.setStatus(request.getStatus());
+    appointment.setCreatedAt(request.getCreatedAt());
+    
     return appointment;
 
 }
@@ -53,11 +56,13 @@ public AppointmentResponse toResponse(Appointment appointment){
   appointmentResponse.setStatus(appointment.getStatus());
   appointmentResponse.setCancellationReason(appointment.getCancellationReason());
   appointmentResponse.setCancelledAt(
-    appointment.getCancelledAt() != null ? java.time.LocalDateTime.parse(appointment.getCancelledAt()) : null
+    appointment.getCancelledAt() != null ? appointment.getCancelledAt() : null
   );
   appointmentResponse.setCancelledBy(
     appointment.getCancellatedBy() != null ? Long.parseLong(appointment.getCancellatedBy()) : null
   );
+  appointmentResponse.setCreatedAt(appointment.getCreatedAt());
+  appointment.setUpdatedAt(appointment.getUpdatedAt());
   return appointmentResponse;  
 } 
 

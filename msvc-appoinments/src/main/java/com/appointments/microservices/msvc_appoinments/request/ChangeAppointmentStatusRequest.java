@@ -1,5 +1,7 @@
 package com.appointments.microservices.msvc_appoinments.request;
 
+import java.time.LocalDateTime;
+
 import com.appointments.microservices.msvc_appoinments.entities.AppointmentStatus;
 
 import jakarta.validation.constraints.NotNull;
@@ -21,5 +23,7 @@ private String notes;
 
 @Size(max = 500, message = "Cancellation reason cannot exceed 500 characters.")
 private String cancellationReason;
+
+private LocalDateTime cancelledAt;
 
 }

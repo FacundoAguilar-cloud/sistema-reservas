@@ -2,6 +2,7 @@ package com.appointments.microservices.msvc_appoinments.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import jakarta.persistence.Column;
@@ -70,13 +71,13 @@ private String cancellationReason;
 private String cancellatedBy;
 
 @Column(name = "cancelled_at", nullable = true)
-private String cancelledAt;
+private LocalDateTime cancelledAt;
 
 @Column(name = "created_at", nullable = true)
-private String createdAt;
+private LocalDateTime createdAt;
 
 @Column(name = "updated_at", nullable = true)
-private String updatedAt;
+private LocalDateTime updatedAt;
 
 // aca quizas deberiamos poner otra info importante que venga directamente de otros msvc(nombre, telefono, email, nombre de la tienda, etc)
 

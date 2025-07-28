@@ -2,7 +2,6 @@ package com.appointments.microservices.msvc_appoinments.servicies;
 
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
@@ -221,7 +220,7 @@ public AppointmentResponse changeAppointmentStatus(ChangeAppointmentStatusReques
  if (request.getStatus() == AppointmentStatus.CANCELED) {
    appointment.setCancellationReason(request.getCancellationReason());
    appointment.setCancellatedBy(request.getCancellationReason());
-   appointment.setCancelledAt(LocalDateTime.now().toString());
+   appointment.setCancelledAt(request.getCancelledAt()); 
  }
  Appointment updatedAppointment = appointmentRepository.save(appointment);
 
