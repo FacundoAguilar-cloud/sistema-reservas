@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -31,7 +32,17 @@ List <Payment> findByPaymentStatus (PaymentStatus paymentStatus);
 
 List <Payment> findPaymentsBetweenDates(LocalDate starDate, LocalDate endDate);
 
-//aca falta seguir agregando querys mas complejas donde se muestren consultas de reportes, estadisticas y reembolsos o con consultas complejas y validaciones
+@Query("SELECT p FROM Payment p WHERE p.paymentStatus = 'COMPLETED' AND " +
+"(p.refundAmount IS NULL OR p.refundAmount < p.amount)")
+List <Payment> findRefoundablePayments();
+
+List <Payment> findRefoundedPayments(PaymentStatus paymentStatus);
+
+//verifica si existe un pago para una cita específica
+boolean existsByAppointmentId(Long appointmentId);
+
+
+//por ahora voy a dejar estos metodos dentro del repositorio pero a partir de que siga el desarrollo se puede ir agregando más según necesitemos
 
 
 }

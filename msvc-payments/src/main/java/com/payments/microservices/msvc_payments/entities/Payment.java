@@ -40,7 +40,7 @@ private Long id;
 private Long userId;
 
 @NotNull(message = "Appointment id is mandatory")
-@Column(name = "appointment_id,", nullable = false)
+@Column(name = "appointment_id", nullable = false)
 private Long appointmentId;
 
 @NotNull(message = "Shop id is mandatory")
@@ -69,7 +69,7 @@ private PaymentStatus paymentStatus;
 
 @Size(max = 100, message = "The id of the transaction cannot exceed 100 characters")
 @Column(name = "transaction_id")
-private Long transactionId;
+private String transactionId;
 
 @Size(max = 200, message = "The description cannot exceed 200 characters")
 private String description;
@@ -91,15 +91,15 @@ private String cardLastFour;
 @Size(max = 30, message = "Name cannot exceed 30 characters")
 private String cardHolderName;
 
-@Column(name = "refound_amount", precision = 12, scale = 2)
-private String refoundAmount;
+@Column(name = "refund_amount", precision = 12, scale = 2)
+private BigDecimal refundAmount;
 
-@Column(name =  "refound_date")
-private LocalDate refoundDate;
+@Column(name =  "refund_date")
+private LocalDate refundDate;
 
-@Column(name = "refound_reason")
+@Column(name = "refund_reason")
 @Size(max = 400, message = "Refound reason cannot exceed 400 characters")
-private String refoundReason;
+private String refundReason;
 
 @CreationTimestamp
 @Column(name = "created_at")
