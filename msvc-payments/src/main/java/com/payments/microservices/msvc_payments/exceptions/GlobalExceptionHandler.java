@@ -23,6 +23,19 @@ public ResponseEntity <String> handleAlreadyExist(ResourceAlreadyExistException 
 public ResponseEntity <String> handlePaymentExcp(PaymentException ex){
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 }
-    
+
+@ExceptionHandler
+public ResponseEntity <String> handlePaymentNotAllExcp(PaymentNoyAllowedException ex){
+    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(ex.getMessage());
+}
+
+@ExceptionHandler
+public ResponseEntity <String> handleUnauthorizedPayExcp(UnauthorizedPaymentException ex){
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+}
+@ExceptionHandler
+public ResponseEntity <String> handlePaymentDataExcp(PaymentDataException ex){
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+}
 
 }

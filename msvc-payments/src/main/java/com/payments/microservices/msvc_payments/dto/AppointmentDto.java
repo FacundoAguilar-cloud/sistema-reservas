@@ -29,4 +29,6 @@ public class AppointmentDto {
   private LocalTime appointmentTime;
     
   private AppointmentStatus status;
+
+  private LocalDate cancelledAt;
 }

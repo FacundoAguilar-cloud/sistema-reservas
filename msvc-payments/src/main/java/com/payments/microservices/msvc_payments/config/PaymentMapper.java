@@ -13,7 +13,7 @@ import com.payments.microservices.msvc_payments.response.PaymentResponse;
 @Component
 public class PaymentMapper {
 //se movio al mapper a una clase exclusiva para hacer el service mas limpio    
-private Payment toEntity(PaymentCreateRequest request, AppointmentDto appointmentDto){
+public Payment toEntity(PaymentCreateRequest request, AppointmentDto appointmentDto){
       Payment payment = new Payment();   //esto lo voy a pasar un mapper para no tener tanto código aca
         payment.setUserId(request.getUserId());
         payment.setAppointmentId(request.getAppointmentId());
@@ -24,7 +24,7 @@ private Payment toEntity(PaymentCreateRequest request, AppointmentDto appointmen
         payment.setPaymentStatus(PaymentStatus.PENDING); // Estado inicial
         payment.setDescription(request.getDescription() != null ? 
                 request.getDescription() : 
-                "Pago por " + appointmentDto.getServiceName());
+                "Pago por " + appointmentDto.getServiceName());        
         payment.setNotes(request.getNotes());
         payment.setCardLastFour(request.getCardLastFour());
         payment.setCardHolderName(request.getCardHolderName());
@@ -38,7 +38,7 @@ private Payment toEntity(PaymentCreateRequest request, AppointmentDto appointmen
         return "PAY_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8);
     }
 
-    private PaymentResponse toResponseDto(Payment payment) {
+    public PaymentResponse toResponseDto(Payment payment) {
         // TODO: Usar PaymentMapper cuando lo creemos
         PaymentResponse dto = new PaymentResponse();
         dto.setId(payment.getId());
