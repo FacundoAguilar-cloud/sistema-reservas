@@ -1,6 +1,5 @@
 package com.payments.microservices.msvc_payments.services;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,6 +15,7 @@ import com.payments.microservices.msvc_payments.dto.AppointmentStatus;
 import com.payments.microservices.msvc_payments.dto.ShopDto;
 import com.payments.microservices.msvc_payments.dto.UserDto;
 import com.payments.microservices.msvc_payments.entities.Payment;
+import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.exceptions.ResourceNotFoundException;
 import com.payments.microservices.msvc_payments.repositories.PaymentRepository;
 import com.payments.microservices.msvc_payments.request.PaymentCreateRequest;
@@ -59,7 +59,7 @@ try {
         throw new IllegalArgumentException("Shop not found");
     }
 } catch (FeignException.NotFound e) {
-    throw new IllegalArgumentException("Shop not found")
+    throw new IllegalArgumentException("Shop not found");
 } catch(FeignException e){
  throw new RuntimeException("Shop service not available, try again later.");
 }
@@ -87,8 +87,6 @@ validateIfShopMatch(request.getShopId(), request.getShopId());    //OK
 
 validateIfPaymentDoesNotExist(request.getAppointmentId());        //OK
 
-validatePaymentAmount(request.getAmount());
-
 validatePaymentMethod(request);
 
 
@@ -102,12 +100,16 @@ return paymentMapper.toResponseDto(savedPayment);
 public PaymentResponse getPaymentById(Long paymentId) {
   Payment payment = paymentRepository.findById(paymentId)
   .orElseThrow(() -> new ResourceNotFoundException("Payment not found."));
-  //vamos a tener que hacer un DTO para convertir el PR a ResponseDTO
+  return paymentMapper.toResponseDto(payment);
 }
 @Override
 public PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paymentId) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'updatePayment'");
+    Payment payment = paymentRepository.findById(paymentId)
+    .orElseThrow(() -> new ResourceNotFoundException("Payment not found."));
+
+    //deberiamos de tener un metodo que se ocupe de verificar los permisos del usuario para poder hacer cambios (admin o owner)
+
+    
 }
 @Override
 public void deletePayment(Long paymentId) {
@@ -189,15 +191,18 @@ private void validateIfPaymentDoesNotExist(Long appointmentId){
     }
 }
 
-private void validatePaymentAmount(BigDecimal requestAmount){
-    if (requestAmount.compareTo(servicePrice) != 0) {
-        throw new IllegalStateException("Payment amount does not match the expected servie price.");
-        
-    }
-}
+
 
 private void validatePaymentMethod(PaymentCreateRequest request){
-
+if (request.getPaymentMethod() == PaymentMethod.CREDIT_CARD ||
+request.getPaymentMethod() == PaymentMethod.DEBIT_CARD) {
+    if (request.getCardLastFour() == null || request.getCardLastFour().trim().isEmpty()) {
+        throw new IllegalArgumentException("Card last four digit are required for payment.");
+    }
+    if (request.getCardHolderName() == null || request.getCardHolderName().trim().isEmpty()) {
+        throw new IllegalArgumentException("Card holder name is required for payment.");
+    }
+}
 }
 
 

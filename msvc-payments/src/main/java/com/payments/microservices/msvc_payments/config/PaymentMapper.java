@@ -18,7 +18,7 @@ public Payment toEntity(PaymentCreateRequest request, AppointmentDto appointment
         payment.setUserId(request.getUserId());
         payment.setAppointmentId(request.getAppointmentId());
         payment.setShopId(request.getShopId());
-        payment.setAmount(request.getAmount());
+        payment.setAmount(appointmentDto.getServicePrice());
         payment.setCurrency(request.getCurrency());
         payment.setPaymentMethod(request.getPaymentMethod());
         payment.setPaymentStatus(PaymentStatus.PENDING); // Estado inicial
