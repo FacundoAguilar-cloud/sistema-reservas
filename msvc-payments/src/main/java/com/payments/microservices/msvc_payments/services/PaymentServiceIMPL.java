@@ -12,7 +12,7 @@ PaymentResponse createPayment(PaymentCreateRequest request);
 
 PaymentResponse getPaymentById(Long paymentId);
 
-PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paymentId);
+PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paymentId, Long userId);
 
 void deletePayment(Long paymentId); //SOFT DELETE, ver despues
 
@@ -24,7 +24,7 @@ List <PaymentResponse> getPaymentsByAppointmentId(Long paymentId);
 
 PaymentResponse processPayment(Long paymentId); //MANDA PAGO A PASARELA (VER MAS TARDE)
 
-PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, Long paymentId);
+PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, Long paymentId, Long userId);
 
 PaymentResponse confirmPayment(String transactionId);
 

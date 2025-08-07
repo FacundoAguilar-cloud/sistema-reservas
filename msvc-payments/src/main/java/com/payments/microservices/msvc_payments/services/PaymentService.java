@@ -2,10 +2,8 @@ package com.payments.microservices.msvc_payments.services;
 
 import java.time.LocalDate;
 import java.util.List;
-
-
+import java.util.Map;
 import org.springframework.stereotype.Service;
-
 import com.payments.microservices.msvc_payments.client.AppointmentClient;
 import com.payments.microservices.msvc_payments.client.ShopClient;
 import com.payments.microservices.msvc_payments.client.UserClient;
@@ -16,6 +14,8 @@ import com.payments.microservices.msvc_payments.dto.ShopDto;
 import com.payments.microservices.msvc_payments.dto.UserDto;
 import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
+import com.payments.microservices.msvc_payments.entities.PaymentStatus;
+import com.payments.microservices.msvc_payments.exceptions.PaymentException;
 import com.payments.microservices.msvc_payments.exceptions.ResourceNotFoundException;
 import com.payments.microservices.msvc_payments.repositories.PaymentRepository;
 import com.payments.microservices.msvc_payments.request.PaymentCreateRequest;
@@ -87,7 +87,7 @@ validateIfShopMatch(request.getShopId(), request.getShopId());    //OK
 
 validateIfPaymentDoesNotExist(request.getAppointmentId());        //OK
 
-validatePaymentMethod(request);
+validatePaymentMethod(request); //OK
 
 
 Payment payment = paymentMapper.toEntity(request, appointment);
@@ -103,18 +103,41 @@ public PaymentResponse getPaymentById(Long paymentId) {
   return paymentMapper.toResponseDto(payment);
 }
 @Override
-public PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paymentId) {
+public PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paymentId, Long userId) {
     Payment payment = paymentRepository.findById(paymentId)
     .orElseThrow(() -> new ResourceNotFoundException("Payment not found."));
-
     //deberiamos de tener un metodo que se ocupe de verificar los permisos del usuario para poder hacer cambios (admin o owner)
+    validateUserPermissions(payment, userId);
+    
+    if (request.getCardHolderName() != null) {
+        payment.setCardHolderName(request.getCardHolderName());
+    }
+    if (request.getCardLastFour() != null) {
+        payment.setCardLastFour(request.getCardLastFour());
+    }
+    if (request.getDescription() != null ) {
+        payment.setDescription(request.getDescription());
+    }
+    if (request.getNotes() != null) {
+        payment.setNotes(request.getNotes());
+    }
 
+    Payment paymentInfoUpdated = paymentRepository.save(payment);
+
+    return paymentMapper.toResponseDto(paymentInfoUpdated);
     
 }
 @Override
 public void deletePayment(Long paymentId) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'deletePayment'");
+    Payment payment = paymentRepository.findById(paymentId)
+    .orElseThrow(() -> new PaymentException("Payment not found, try again."));
+    //validamos permisos del usuario para borrar y si realmente ese pago puede ser eliminado
+    validateUserPermissions(payment, paymentId);
+
+    validatePaymentDelete(payment);
+
+    paymentRepository.delete(payment);
+
 }
 @Override
 public List<PaymentResponse> getPaymentsByUserId(Long userId) {
@@ -138,9 +161,21 @@ public PaymentResponse processPayment(Long paymentId) {
     throw new UnsupportedOperationException("Unimplemented method 'processPayment'");
 }
 @Override
-public PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, Long paymentId) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'updatePaymentStatus'");
+public PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, Long paymentId, Long userId) {
+    Payment payment = paymentRepository.findById(paymentId)
+    .orElseThrow(()->  new ResourceNotFoundException("Payment not found, please try again."));
+    //validamos usuario
+    validateUserPermissions(payment, userId);
+
+    //validar que el status que vamos a cambiar sea correcto
+    validateStatusChange(request.getPaymentStatus(), payment.getPaymentStatus());
+
+    payment.setPaymentStatus(request.getPaymentStatus());
+
+
+
+
+
 }
 @Override
 public PaymentResponse confirmPayment(String transactionId) {
@@ -204,6 +239,48 @@ request.getPaymentMethod() == PaymentMethod.DEBIT_CARD) {
     }
 }
 }
+//Validaciones para updates/deletes y demás
+
+  public void validateUserPermissions(Payment payment,Long userId){
+    if (payment.getUserId().equals(userId)) {
+        return;
+    }
+//verificar donde se realizó el pago (en que tienda basicamete) //REVISAR
+  Map <String, Object> shopData = shopClient.  getShopById(payment.getShopId());
+    if (shopData != null) {
+        Long ownerId = (Long) shopData.get("ownerId");
+        if (ownerId != null && ownerId.equals(userId)) {
+            return;
+        }
+    return;
+   }  
+
+  //verificar si el barbero asociado  al pago es de la cita en concreto
+Map<String, Object> appointmentData = (Map<String, Object>) appointmentClient.getAppointmentById(payment.getAppointmentId());
+   if (appointmentData != null) {
+    Long barberId = (Long) appointmentData.get("barberId");
+    if (barberId != null && barberId.equals(userId)) {
+        return;
+    }
+   }
+   throw new PaymentException("You dont have permissions to access this payment.");
+  }
+
+
+
+   public void validatePaymentDelete(Payment payment){
+    if ( payment.getPaymentStatus() == PaymentStatus.COMPLETED  ||
+         payment.getPaymentStatus() == PaymentStatus.PROCESSING ||
+         payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
+        throw new PaymentException("You cannot delete a completed or processing payment");
+    }
+   }
+
+   public void validateStatusChange(PaymentStatus actualStatus, PaymentStatus newStatus){
+    if (actualStatus == PaymentStatus.COMPLETED || newStatus == PaymentStatus.COMPLETED) {
+        throw new PaymentException("You cannot change the status of a completed payment.");
+    }
+   }
 
 
  
