@@ -1,5 +1,6 @@
 package com.payments.microservices.msvc_payments.request;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -23,10 +24,16 @@ private PaymentStatus paymentStatus;
 @Size(max = 100, message = "The id of the transaction cannot exceed 100 characters")
 private String transactionId;
 
-private LocalDate paymenDate;
+private LocalDate paymentDate;
 
 private LocalTime paymentTime;
 
-private LocalDateTime updatedAt;
+private BigDecimal refoundAmount;
+
+private String failureReason; //para casos donde el pago es fallido o hubo algun error
+
+private LocalDateTime completedAt;
+
+private String externalReference;
 
 }

@@ -38,4 +38,9 @@ public ResponseEntity <String> handlePaymentDataExcp(PaymentDataException ex){
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 }
 
+@ExceptionHandler
+public ResponseEntity <String> handlePaymentProcs(PaymentProcessingException ex){
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+}
+
 }

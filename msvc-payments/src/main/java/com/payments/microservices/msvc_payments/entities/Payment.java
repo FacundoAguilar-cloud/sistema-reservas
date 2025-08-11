@@ -109,6 +109,12 @@ private LocalDateTime createdAt;
 @Column(name = "updated_at")
 private LocalDateTime updatedAt;
 
+private LocalDateTime completedAt;
+
+private String externalReference; //basicamente esto te va a indicar de donde viene el pago (MP,credito, paypal, etc).
+
+private LocalDateTime processingStartedAt;
+
 
 
 }

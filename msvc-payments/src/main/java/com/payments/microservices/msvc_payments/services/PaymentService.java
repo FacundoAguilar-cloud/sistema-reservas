@@ -1,9 +1,12 @@
 package com.payments.microservices.msvc_payments.services;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.payments.microservices.msvc_payments.client.AppointmentClient;
 import com.payments.microservices.msvc_payments.client.ShopClient;
 import com.payments.microservices.msvc_payments.client.UserClient;
@@ -16,6 +19,7 @@ import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.entities.PaymentStatus;
 import com.payments.microservices.msvc_payments.exceptions.PaymentException;
+import com.payments.microservices.msvc_payments.exceptions.PaymentProcessingException;
 import com.payments.microservices.msvc_payments.exceptions.ResourceNotFoundException;
 import com.payments.microservices.msvc_payments.repositories.PaymentRepository;
 import com.payments.microservices.msvc_payments.request.PaymentCreateRequest;
@@ -78,7 +82,7 @@ catch(FeignException e){
    throw new IllegalArgumentException("Appointment service not available, try again later.");
 }
 
-//validaciones para la lógica del genocio 
+//validaciones para la lógica del negocio 
 
 
 validateIfUserCanPayAppointment(request.getUserId(), appointment); //OK
@@ -155,11 +159,7 @@ public List<PaymentResponse> getPaymentsByAppointmentId(Long paymentId) {
    List <Payment> payments = paymentRepository.findPaymentByAppointmentId(paymentId);
    return paymentMapper.toResponseDtoList(payments);
 }
-@Override
-public PaymentResponse processPayment(Long paymentId) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'processPayment'");
-}
+
 @Override
 public PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, Long paymentId, Long userId) {
     Payment payment = paymentRepository.findById(paymentId)
@@ -171,25 +171,98 @@ public PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, L
     validateStatusChange(request.getPaymentStatus(), payment.getPaymentStatus());
 
     payment.setPaymentStatus(request.getPaymentStatus());
+    payment.setUpdatedAt(LocalDateTime.now());
 
+    if (request.getTransactionId() != null) {
+        payment.setTransactionId(request.getTransactionId());
+    }
 
+    if (request.getPaymentDate() != null) {
+        payment.setPaymenDate(request.getPaymentDate());
+    }
 
+    if (request.getPaymentTime() != null) {
+        payment.setPaymentTime(request.getPaymentTime());
+    }
 
+    switch (request.getPaymentStatus()) {
+        case FAILED:
+            if (request.getFailureReason() != null) {
+                payment.setRefundAmount(request.getRefoundAmount());
+            }
+            break;
+            case REFUNDED:
+            if (request.getRefoundAmount() != null) {
+                payment.setRefundAmount(request.getRefoundAmount());
+            }
+            payment.setRefundDate(LocalDate.now());
+            break;
+    
+            case COMPLETED:
+            payment.setCompletedAt(LocalDateTime.now());
+        default:
+            break;
+    }
+    if (request.getExternalReference() != null) {
+        payment.setExternalReference(request.getExternalReference());
+    }
 
+    Payment updatedPayment = paymentRepository.save(payment);
+
+    return paymentMapper.toResponseDto(updatedPayment);
 }
+
+@Override
+@Transactional
+public PaymentResponse processPayment(Long paymentId) { //falta esto
+    try {
+       //Obtener el pago
+       Payment payment = paymentRepository.findById(paymentId)
+       .orElseThrow(()-> new ResourceNotFoundException("Payment not found"));
+
+        //Verificar si el pago está disponible para ser procesado correctamente 
+        validatePaymentForProccesing(payment);  //HACER
+
+        // Dejamos el status en PROCESSING
+        payment.setPaymentStatus(PaymentStatus.PROCESSING);
+        payment.setProcessingStartedAt(LocalDateTime.now());
+        paymentRepository.save(payment);
+
+        //se procesa acá segun el metodo de pagó utilizado 
+
+        paymentProcessingResult result = processPaymentByMethod(payment); //estos metodos tambien los vamos a tener que crear
+
+        //actualizamos el pago
+
+        updatePaymentFromResult(payment, result);
+
+        //guardamos los cambios
+        Payment processedPayment = paymentRepository.save(payment);
+
+        //acciones post-procesamiento
+
+        handlePostProcessingActions(processedPayment, result);
+
+        return paymentMapper.toResponseDto(processedPayment);
+
+    } catch (PaymentProcessingException e) {
+        throw new PaymentProcessingException("Unexpected error during payment processing");
+    }
+}
+
 @Override
 public PaymentResponse confirmPayment(String transactionId) {
     // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'confirmPayment'");
+    throw new UnsupportedOperationException("Unimplemented method 'confirmPayment'"); //falta esto
 }
 @Override
-public boolean canAppointmentBePaid(Long appointmentId) {
+public boolean canAppointmentBePaid(Long appointmentId) { //falta esto
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'canAppointmentBePaid'");
 }
 @Override
-public boolean paymentExistsForAppointment(Long appointmentId) {
-    // TODO Auto-generated method stub
+public boolean paymentExistsForAppointment(Long appointmentId) { //falta esto
+    // TODO Auto-generated method stub 
     throw new UnsupportedOperationException("Unimplemented method 'paymentExistsForAppointment'");
 }
 //validaciones para logica de negocio
@@ -214,13 +287,13 @@ private void validateIfUserCanPayAppointment(Long userId, AppointmentDto appoint
  }
   
 
-private void validateIfShopMatch(Long shopId, Long appointmentShopId) {
+private void validateIfShopMatch(Long shopId, Long appointmentShopId) { //falta esto
     if (!shopId.equals(appointmentShopId)) {
         throw new IllegalArgumentException("Shop ID does not match the appointment's shop.");
     }
 }
 
-private void validateIfPaymentDoesNotExist(Long appointmentId){
+private void validateIfPaymentDoesNotExist(Long appointmentId){ //falta esto
     if (!paymentRepository.existsByAppointmentId(appointmentId)) {
         throw new IllegalStateException("Payment already exist for this appointment.");
     }
