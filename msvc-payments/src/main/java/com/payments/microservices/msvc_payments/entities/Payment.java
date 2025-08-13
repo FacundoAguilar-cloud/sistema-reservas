@@ -115,6 +115,8 @@ private String externalReference; //basicamente esto te va a indicar de donde vi
 
 private LocalDateTime processingStartedAt;
 
+private LocalDateTime expiresAt;
+
 
 
 }

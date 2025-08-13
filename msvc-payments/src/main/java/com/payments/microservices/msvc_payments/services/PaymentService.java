@@ -1,5 +1,6 @@
 package com.payments.microservices.msvc_payments.services;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,6 +19,8 @@ import com.payments.microservices.msvc_payments.dto.UserDto;
 import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.entities.PaymentStatus;
+import com.payments.microservices.msvc_payments.exceptions.InvalidPaymentMethodException;
+import com.payments.microservices.msvc_payments.exceptions.InvalidPaymentStatusException;
 import com.payments.microservices.msvc_payments.exceptions.PaymentException;
 import com.payments.microservices.msvc_payments.exceptions.PaymentProcessingException;
 import com.payments.microservices.msvc_payments.exceptions.ResourceNotFoundException;
@@ -268,7 +271,7 @@ public boolean paymentExistsForAppointment(Long appointmentId) { //falta esto
 //validaciones para logica de negocio
 private void validateIfUserCanPayAppointment(Long userId, AppointmentDto appointmentDto){
     if (!appointmentDto.getClientId().equals(userId)) {
-        throw new SecurityException("User is not authorized to pay for the appointment");
+        throw new SecurityException("User is not authorized to pay for the appointment.");
     }
  }
 
@@ -278,11 +281,11 @@ private void validateIfUserCanPayAppointment(Long userId, AppointmentDto appoint
         throw new IllegalStateException("Appointment cannot be paid, check the status and wait.");
     }
     if (appointment.getCancelledAt() != null) {
-        throw new IllegalStateException("Cannot pay for cancelled appointments");
+        throw new IllegalStateException("Cannot pay for cancelled appointments.");
     }
 
     if (appointment.getAppointmentDate().isBefore(LocalDate.now())) {
-        throw new IllegalStateException("Cannot pay for past appointments");
+        throw new IllegalStateException("Cannot pay for past appointments.");
     }
  }
   
@@ -298,6 +301,28 @@ private void validateIfPaymentDoesNotExist(Long appointmentId){ //falta esto
         throw new IllegalStateException("Payment already exist for this appointment.");
     }
 }
+
+private void validatePaymentForProccesing(Payment payment){
+    if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+        throw new InvalidPaymentStatusException("Payment cannot be processed.");
+    }
+   
+    //validamos si el pago expiró o no 
+    if (payment.getExpiresAt() != null && payment.getExpiresAt().isBefore(LocalDateTime.now())) {
+        throw new PaymentException("Payment has expired and cannot be processed.");
+    }
+
+    //aseguramos que el monto no sea 0) 
+    if (payment.getAmount() == null || payment.getAmount().compareTo(BigDecimal.ZERO) <= 0){
+        throw new PaymentException("Payment amount must be grater than zero.");
+    }
+
+    //validamos el metodo de pago
+    if (payment.getPaymentMethod() == null) {
+        throw new InvalidPaymentMethodException("Payment method is required.");
+    }
+
+
 
 
 
@@ -356,5 +381,5 @@ Map<String, Object> appointmentData = (Map<String, Object>) appointmentClient.ge
    }
 
 
- 
 }
+

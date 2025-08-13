@@ -43,4 +43,14 @@ public ResponseEntity <String> handlePaymentProcs(PaymentProcessingException ex)
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 }
 
+@ExceptionHandler
+public ResponseEntity <String> handleInvPayStatus(InvalidPaymentStatusException ex){
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+}
+
+@ExceptionHandler
+public ResponseEntity <String> handlePayMethod(InvalidPaymentMethodException ex){
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+}
+
 }
