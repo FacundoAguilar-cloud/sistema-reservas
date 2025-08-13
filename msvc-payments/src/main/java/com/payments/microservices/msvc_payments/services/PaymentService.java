@@ -18,6 +18,7 @@ import com.payments.microservices.msvc_payments.dto.ShopDto;
 import com.payments.microservices.msvc_payments.dto.UserDto;
 import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
+import com.payments.microservices.msvc_payments.entities.PaymentProcessingResult;
 import com.payments.microservices.msvc_payments.entities.PaymentStatus;
 import com.payments.microservices.msvc_payments.exceptions.InvalidPaymentMethodException;
 import com.payments.microservices.msvc_payments.exceptions.InvalidPaymentStatusException;
@@ -233,7 +234,7 @@ public PaymentResponse processPayment(Long paymentId) { //falta esto
 
         //se procesa acá segun el metodo de pagó utilizado 
 
-        paymentProcessingResult result = processPaymentByMethod(payment); //estos metodos tambien los vamos a tener que crear
+        PaymentProcessingResult result = processPaymentByMethod(payment); //estos metodos tambien los vamos a tener que crear
 
         //actualizamos el pago
 
@@ -302,7 +303,7 @@ private void validateIfPaymentDoesNotExist(Long appointmentId){ //falta esto
     }
 }
 
-private void validatePaymentForProccesing(Payment payment){
+private void validatePaymentForProccesing(Payment payment){ 
     if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
         throw new InvalidPaymentStatusException("Payment cannot be processed.");
     }
@@ -320,6 +321,29 @@ private void validatePaymentForProccesing(Payment payment){
     //validamos el metodo de pago
     if (payment.getPaymentMethod() == null) {
         throw new InvalidPaymentMethodException("Payment method is required.");
+    }}
+
+    private PaymentProcessingResult processPaymentByMethod (Payment payment){
+        PaymentMethod method = payment.getPaymentMethod();
+
+        try {
+            switch (method) {
+                case CREDIT_CARD:
+                    return processCreditCardPayment; //estos hay que hacerlos todos, cada uno procesa un pago distinto
+                 case DEBIT_CARD:
+                    return processDebitCardPayment;
+                 case BANK_TRANSFER:
+                 return processBankTransferPayment;
+                 case DIGITAL_WALLET:
+                 return processDigitalWalletPayment;      
+                 case CRYPTO:
+                 return processCryptoPayment;   
+                default:
+                    throw new InvalidPaymentMethodException("Unsupported payment method.");
+            }
+        } catch (PaymentException e) {
+            throw new PaymentException("Service unavailable.");
+        }
     }
 
 
@@ -381,5 +405,5 @@ Map<String, Object> appointmentData = (Map<String, Object>) appointmentClient.ge
    }
 
 
-}
+} 
 
