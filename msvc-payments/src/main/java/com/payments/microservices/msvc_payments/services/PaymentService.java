@@ -48,6 +48,8 @@ private final UserClient userClient;
 private final ShopClient shopClient;
 private final PaymentRepository paymentRepository;
 private final PaymentMapper paymentMapper;
+
+//LO QUE VA EN EL SERVICIO PRINCIPAL
 @Override
 public PaymentResponse createPayment(PaymentCreateRequest request) {
    //validamos si el usuario existe:
@@ -91,22 +93,13 @@ catch(FeignException e){
 
 //validaciones para la lógica del negocio 
 
-
-validateIfUserCanPayAppointment(request.getUserId(), appointment); //OK
-
-validateIfShopMatch(request.getShopId(), request.getShopId());    //OK
-
-validateIfPaymentDoesNotExist(request.getAppointmentId());        //OK
-
-validatePaymentMethod(request); //OK
-
-
 Payment payment = paymentMapper.toEntity(request, appointment);
 
 Payment savedPayment = paymentRepository.save(payment);
 
 return paymentMapper.toResponseDto(savedPayment);
 }
+
 @Override
 public PaymentResponse getPaymentById(Long paymentId) {
   Payment payment = paymentRepository.findById(paymentId)
@@ -273,58 +266,6 @@ public boolean paymentExistsForAppointment(Long appointmentId) { //falta esto
     throw new UnsupportedOperationException("Unimplemented method 'paymentExistsForAppointment'");
 }
 //validaciones para logica de negocio
-private void validateIfUserCanPayAppointment(Long userId, AppointmentDto appointmentDto){
-    if (!appointmentDto.getClientId().equals(userId)) {
-        throw new SecurityException("User is not authorized to pay for the appointment.");
-    }
- }
-
- private void validateIfAppointmentCanBePaid(AppointmentDto appointment){
-    if (appointment.getStatus() != AppointmentStatus.PENDING &&
-    appointment.getStatus() != AppointmentStatus.CONFIRMED) {
-        throw new IllegalStateException("Appointment cannot be paid, check the status and wait.");
-    }
-    if (appointment.getCancelledAt() != null) {
-        throw new IllegalStateException("Cannot pay for cancelled appointments.");
-    }
-
-    if (appointment.getAppointmentDate().isBefore(LocalDate.now())) {
-        throw new IllegalStateException("Cannot pay for past appointments.");
-    }
- }
-  
-
-private void validateIfShopMatch(Long shopId, Long appointmentShopId) { //falta esto
-    if (!shopId.equals(appointmentShopId)) {
-        throw new IllegalArgumentException("Shop ID does not match the appointment's shop.");
-    }
-}
-
-private void validateIfPaymentDoesNotExist(Long appointmentId){ //falta esto
-    if (!paymentRepository.existsByAppointmentId(appointmentId)) {
-        throw new IllegalStateException("Payment already exist for this appointment.");
-    }
-}
-
-private void validatePaymentForProccesing(Payment payment){ 
-    if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
-        throw new InvalidPaymentStatusException("Payment cannot be processed.");
-    }
-   
-    //validamos si el pago expiró o no 
-    if (payment.getExpiresAt() != null && payment.getExpiresAt().isBefore(LocalDateTime.now())) {
-        throw new PaymentException("Payment has expired and cannot be processed.");
-    }
-
-    //aseguramos que el monto no sea 0) 
-    if (payment.getAmount() == null || payment.getAmount().compareTo(BigDecimal.ZERO) <= 0){
-        throw new PaymentException("Payment amount must be grater than zero.");
-    }
-
-    //validamos el metodo de pago
-    if (payment.getPaymentMethod() == null) {
-        throw new InvalidPaymentMethodException("Payment method is required.");
-    }}
 
     private PaymentProcessingResult processPaymentByMethod (Payment payment){
         PaymentMethod method = payment.getPaymentMethod();
@@ -372,22 +313,6 @@ private void validatePaymentForProccesing(Payment payment){
 
         
     }
-
-
-
-
-
-private void validatePaymentMethod(PaymentCreateRequest request){
-if (request.getPaymentMethod() == PaymentMethod.CREDIT_CARD ||
-request.getPaymentMethod() == PaymentMethod.DEBIT_CARD) {
-    if (request.getCardLastFour() == null || request.getCardLastFour().trim().isEmpty()) {
-        throw new IllegalArgumentException("Card last four digit are required for payment.");
-    }
-    if (request.getCardHolderName() == null || request.getCardHolderName().trim().isEmpty()) {
-        throw new IllegalArgumentException("Card holder name is required for payment.");
-    }
-}
-}
 //Validaciones para updates/deletes y demás
 
   public void validateUserPermissions(Payment payment,Long userId){
@@ -414,23 +339,6 @@ Map<String, Object> appointmentData = (Map<String, Object>) appointmentClient.ge
    }
    throw new PaymentException("You dont have permissions to access this payment.");
   }
-
-
-
-   public void validatePaymentDelete(Payment payment){
-    if ( payment.getPaymentStatus() == PaymentStatus.COMPLETED  ||
-         payment.getPaymentStatus() == PaymentStatus.PROCESSING ||
-         payment.getPaymentStatus() == PaymentStatus.REFUNDED) {
-        throw new PaymentException("You cannot delete a completed or processing payment");
-    }
-   }
-
-   public void validateStatusChange(PaymentStatus actualStatus, PaymentStatus newStatus){
-    if (actualStatus == PaymentStatus.COMPLETED || newStatus == PaymentStatus.COMPLETED) {
-        throw new PaymentException("You cannot change the status of a completed payment.");
-    }
-   }
-
 
 } 
 
