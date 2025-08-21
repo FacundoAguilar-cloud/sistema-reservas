@@ -25,7 +25,7 @@ public ResponseEntity <String> handlePaymentExcp(PaymentException ex){
 }
 
 @ExceptionHandler
-public ResponseEntity <String> handlePaymentNotAllExcp(PaymentNoyAllowedException ex){
+public ResponseEntity <String> handlePaymentNotAllExcp(PaymentNotAllowedException ex){
     return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(ex.getMessage());
 }
 

@@ -41,13 +41,15 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-
 public class PaymentService implements PaymentServiceIMPL {
 private final AppointmentClient appointmentClient;
 private final UserClient userClient;
 private final ShopClient shopClient;
 private final PaymentRepository paymentRepository;
 private final PaymentMapper paymentMapper;
+private final PaymentValidationService paymentValidationService;
+private final ExternalServiceValidation externalServiceValidation;
+private final PaymentProcessingService paymentProcessingService;
 
 //LO QUE VA EN EL SERVICIO PRINCIPAL
 @Override
@@ -107,10 +109,11 @@ public PaymentResponse getPaymentById(Long paymentId) {
   return paymentMapper.toResponseDto(payment);
 }
 @Override
+@Transactional
 public PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paymentId, Long userId) {
     Payment payment = paymentRepository.findById(paymentId)
     .orElseThrow(() -> new ResourceNotFoundException("Payment not found."));
-    //deberiamos de tener un metodo que se ocupe de verificar los permisos del usuario para poder hacer cambios (admin o owner)
+    //deberiamos de tener un metodo que se ocupe de verificar los permisos del usuario para poder hacer cambios (admin o owner), deberia hacerlo el security mas adelante
     validateUserPermissions(payment, userId);
     
     if (request.getCardHolderName() != null) {
@@ -128,21 +131,31 @@ public PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paym
 
     Payment paymentInfoUpdated = paymentRepository.save(payment);
 
+
     return paymentMapper.toResponseDto(paymentInfoUpdated);
     
 }
 @Override
+@Transactional
 public void deletePayment(Long paymentId) {
     Payment payment = paymentRepository.findById(paymentId)
     .orElseThrow(() -> new PaymentException("Payment not found, try again."));
     //validamos permisos del usuario para borrar y si realmente ese pago puede ser eliminado
     validateUserPermissions(payment, paymentId);
 
-    validatePaymentDelete(payment);
+    paymentValidationService.validatePaymentDelete(payment);
 
     paymentRepository.delete(payment);
-
 }
+@Override
+@Transactional
+public PaymentResponse processPayment(Long paymentId){
+Payment payment = paymentRepository.findById(paymentId)
+.orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
+
+return paymentProcessingService.processPayment(payment);
+}
+
 @Override
 public List<PaymentResponse> getPaymentsByUserId(Long userId) {
     List <Payment> payments = paymentRepository.findPaymentByUserId(userId); 
@@ -168,7 +181,7 @@ public PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, L
     validateUserPermissions(payment, userId);
 
     //validar que el status que vamos a cambiar sea correcto
-    validateStatusChange(request.getPaymentStatus(), payment.getPaymentStatus());
+    paymentValidationService.validateStatusChange(request.getPaymentStatus(), payment.getPaymentStatus());
 
     payment.setPaymentStatus(request.getPaymentStatus());
     payment.setUpdatedAt(LocalDateTime.now());
@@ -212,43 +225,7 @@ public PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, L
     return paymentMapper.toResponseDto(updatedPayment);
 }
 
-@Override
-@Transactional
-public PaymentResponse processPayment(Long paymentId) { //falta esto
-    try {
-       //Obtener el pago
-       Payment payment = paymentRepository.findById(paymentId)
-       .orElseThrow(()-> new ResourceNotFoundException("Payment not found"));
 
-        //Verificar si el pago está disponible para ser procesado correctamente 
-        validatePaymentForProccesing(payment);  //HACER
-
-        // Dejamos el status en PROCESSING
-        payment.setPaymentStatus(PaymentStatus.PROCESSING);
-        payment.setProcessingStartedAt(LocalDateTime.now());
-        paymentRepository.save(payment);
-
-        //se procesa acá segun el metodo de pagó utilizado 
-
-        PaymentProcessingResult result = processPaymentByMethod(payment); //estos metodos tambien los vamos a tener que crear
-
-        //actualizamos el pago
-
-        updatePaymentFromResult(payment, result);
-
-        //guardamos los cambios
-        Payment processedPayment = paymentRepository.save(payment);
-
-        //acciones post-procesamiento
-
-        handlePostProcessingActions(processedPayment, result);
-
-        return paymentMapper.toResponseDto(processedPayment);
-
-    } catch (PaymentProcessingException e) {
-        throw new PaymentProcessingException("Unexpected error during payment processing");
-    }
-}
 
 @Override
 public PaymentResponse confirmPayment(String transactionId) {

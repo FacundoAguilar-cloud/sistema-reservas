@@ -39,6 +39,8 @@ private Long id;
 @Column(name = "user_id", nullable = false)
 private Long userId;
 
+private Long customerId;
+
 @NotNull(message = "Appointment id is mandatory")
 @Column(name = "appointment_id", nullable = false)
 private Long appointmentId;
@@ -116,6 +118,10 @@ private String externalReference; //basicamente esto te va a indicar de donde vi
 private LocalDateTime processingStartedAt;
 
 private LocalDateTime expiresAt;
+
+private String cardToken;
+
+
 
 
 
