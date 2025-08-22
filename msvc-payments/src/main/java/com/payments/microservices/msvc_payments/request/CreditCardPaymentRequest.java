@@ -29,5 +29,7 @@ private String cardNumber;
 
 private String cardCvv;
 
+private String network;
+
 
 }

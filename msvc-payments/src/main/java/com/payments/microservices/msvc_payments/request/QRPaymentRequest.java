@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DigiWalletPaymentRequest {
+public class QRPaymentRequest {
 private String transactionId;
 
 private BigDecimal amount;
