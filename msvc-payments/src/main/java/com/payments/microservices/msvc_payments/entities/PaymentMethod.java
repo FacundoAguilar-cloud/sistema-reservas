@@ -1,10 +1,20 @@
 package com.payments.microservices.msvc_payments.entities;
 
 public enum PaymentMethod {
-CREDIT_CARD,
-DEBIT_CARD,
-BANK_TRANSFER,
-DIGITAL_WALLET,
-CASH,
-CRYPTO;
+    CREDIT_CARD("Credit Card"),
+    DEBIT_CARD("Debit Card"),
+    BANK_TRANSFER("Bank Transfer"),
+    DIGITAL_WALLET("Digital Wallet"),
+    CASH("Cash"),
+    CRYPTO("Crypto");
+
+    private final String displayName;
+
+    PaymentMethod(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
 }

@@ -122,6 +122,22 @@ private LocalDateTime expiresAt;
 private String cardToken;
 
 
+ public void markAsPaid(String transactionId) {
+        this.paymentStatus = PaymentStatus.COMPLETED;
+        this.transactionId = transactionId;
+        this.completedAt = LocalDateTime.now();
+    }
+    
+    public void markAsCancelled() {
+        this.paymentStatus = PaymentStatus.CANCELLED;
+        this.completedAt = LocalDateTime.now();
+    }
+    
+    public void markAsRefunded() {
+        this.paymentStatus = PaymentStatus.REFUNDED;
+        this.refundDate = LocalDate.now();
+    }
+
 
 
 
