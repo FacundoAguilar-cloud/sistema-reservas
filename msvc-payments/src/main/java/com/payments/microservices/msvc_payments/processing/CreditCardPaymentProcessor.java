@@ -23,7 +23,7 @@ public class CreditCardPaymentProcessor extends BasePaymentProcessor {@Override
 
          CreditCardPaymentRequest request = buildCreaditCardRequest(payment);
          
-         PaymentProviderResponse response = creditCardProvider
+         PaymentProviderResponse response;
        } catch (Exception e) {
         // TODO: handle exception
        }

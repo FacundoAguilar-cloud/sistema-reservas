@@ -227,10 +227,21 @@ public PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, L
 
 
 
-@Override
-public PaymentResponse confirmPayment(String transactionId) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'confirmPayment'"); //falta esto
+
+public PaymentResponse confirmPayment(Long paymentId, String transactionId) {
+    Payment payment = paymentRepository.findById(paymentId)
+        .orElseThrow(() -> new ResourceNotFoundException("Payment not found."));
+   if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+     log.warn("Attempt to confirm payment that is not pending. PaymentId: {}", paymentId);
+     return paymentMapper.toResponseDto(payment);
+   }
+
+   payment.markAsPaid(transactionId);
+   paymentRepository.save(payment);
+
+   log.info("Payment confirmed.");
+
+   return paymentMapper.toResponseDto(payment);
 }
 @Override
 public boolean canAppointmentBePaid(Long appointmentId) { //falta esto

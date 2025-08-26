@@ -2,16 +2,14 @@ package com.payments.microservices.msvc_payments.request;
 
 import java.math.BigDecimal;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+
 
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class BankTransferPaymentRequest {
+@EqualsAndHashCode(callSuper = true)
+public class CashPaymentRequest extends PaymentRequest {
 private String transactionId;
 
 private BigDecimal amount;
@@ -23,4 +21,6 @@ private String description;
 private Long customerId;
 
 private String bankAccount;
+
+private PaymentMethod cashtype; //si es efectivo o transferencia bancaria 
 }

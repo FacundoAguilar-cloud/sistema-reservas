@@ -18,6 +18,8 @@ import com.payments.microservices.msvc_payments.entities.PaymentStatus;
 public interface PaymentRepository extends CrudRepository<Payment, Long> {
 List <Payment> findPaymentByUserId(Long userId);
 
+Optional <Payment> findByPaymentId(Long paymentId);
+
 List <Payment>  findPaymentByAppointmentId(Long appointmentId);
 
 List <Payment> findPaymentByShopId (Long shopId);

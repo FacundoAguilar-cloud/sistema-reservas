@@ -26,7 +26,7 @@ PaymentResponse processPayment(Long paymentId); //MANDA PAGO A PASARELA (VER MAS
 
 PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, Long paymentId, Long userId);
 
-PaymentResponse confirmPayment(String transactionId);
+PaymentResponse confirmPayment(Long paymentId ,String transactionId);
 
 boolean canAppointmentBePaid(Long appointmentId); //Verifica si la cita puede ser pagada
 
