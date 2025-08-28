@@ -8,4 +8,6 @@ PaymentProviderResponse processPayment(T request);
 String getProviderName();
 
 boolean isAvailable();
+
+boolean supportsPaymentMethod();
 }
