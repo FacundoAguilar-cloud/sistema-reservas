@@ -16,14 +16,17 @@ private String transactionId;
 
 private BigDecimal amount;
 
-private String currency;
+private String externalReference;
 
-private String walletToken;
-
-private String walletType;
+private String notificationUrl;
 
 private String description;
 
-private Long customerId;
+private Integer expirationMinutes;
+
+  public QRPaymentRequest(BigDecimal amount, String description) {
+        this.amount = amount;
+        this.description = description;
+    }
 
 }

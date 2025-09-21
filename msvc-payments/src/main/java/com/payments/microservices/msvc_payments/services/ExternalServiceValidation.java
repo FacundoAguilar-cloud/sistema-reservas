@@ -28,6 +28,8 @@ public ValidationContext validateExternalEntities(PaymentCreateRequest request){
     ShopDto shopDto = validateShop(request.getShopId());
     AppointmentDto appointmentDto = validateAppointment(request.getAppointmentId());
 
+    validateBusinessRules(request, appointmentDto);
+
     return ValidationContext.builder()
     .user(userDto)
     .shop(shopDto)
@@ -77,6 +79,16 @@ private AppointmentDto validateAppointment(Long appointmentId){
     }
     catch(FeignException e){
         throw new RuntimeException("Appointment service not available, please try again");
+    }
+}
+
+private void validateBusinessRules(PaymentCreateRequest request, AppointmentDto appointment){
+    if (!appointment.getClientId().equals(request.getUserId())) {
+        throw new SecurityException("User not authorized to pay for this appointment");
+    }
+
+    if (!appointment.getShopId().equals(request.getShopId())) {
+        throw new SecurityException("Shop ID doesn´t match appointments shop");
     }
 }
 

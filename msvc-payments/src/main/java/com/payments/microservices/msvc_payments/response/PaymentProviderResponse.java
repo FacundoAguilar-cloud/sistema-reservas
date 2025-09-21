@@ -2,6 +2,7 @@ package com.payments.microservices.msvc_payments.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,53 +15,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentProviderResponse {
 
-private boolean success;
+ private boolean success;
+    private String transactionId;
+    private String qrCode; // Para pagos QR
+    private String paymentUrl; // URL de pago
+    private String status; // PENDING, APPROVED, REJECTED, etc.
+    private String message;
+    private String errorCode;
+    private BigDecimal amount;
+    private String currency;
+    private LocalDateTime processedAt;
+    private Map<String, String> metadata;
 
-private String transactionId;
 
-private String AuthCode;
 
-private String errorMsg;
-
-private String errorCode;
-
-private String response;
-
-private BigDecimal amount;
-
-private BigDecimal processedAmount;
- 
-private String currency;
-
-private BigDecimal fee;   
-          
-private BigDecimal netAmount;
-
-private LocalDateTime processedAt;
-
-private LocalDateTime requestedAt;
-
-private String providerTransactionId;
-
-private String providerName;
-
-private String errorCategory;
-
-private String errorDescription;
-
-private String maskedCardNumber;
-
-private String cardBrand;
-
-private String cardType;
-
-public boolean hasCardInfo() {
-        return maskedCardNumber != null || cardBrand != null || cardType != null;
-    }
-
-public boolean isSuccessful() {
-        return success && transactionId != null && !transactionId.trim().isEmpty();
-    }
 
     
 

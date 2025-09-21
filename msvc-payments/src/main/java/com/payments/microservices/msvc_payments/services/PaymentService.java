@@ -1,6 +1,6 @@
 package com.payments.microservices.msvc_payments.services;
 
-import java.math.BigDecimal;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,25 +13,18 @@ import com.payments.microservices.msvc_payments.client.ShopClient;
 import com.payments.microservices.msvc_payments.client.UserClient;
 import com.payments.microservices.msvc_payments.config.PaymentMapper;
 import com.payments.microservices.msvc_payments.dto.AppointmentDto;
-import com.payments.microservices.msvc_payments.dto.AppointmentStatus;
 import com.payments.microservices.msvc_payments.dto.ShopDto;
 import com.payments.microservices.msvc_payments.dto.UserDto;
 import com.payments.microservices.msvc_payments.entities.Payment;
-import com.payments.microservices.msvc_payments.entities.PaymentMethod;
-import com.payments.microservices.msvc_payments.entities.PaymentProcessingResult;
 import com.payments.microservices.msvc_payments.entities.PaymentStatus;
-import com.payments.microservices.msvc_payments.exceptions.InvalidPaymentMethodException;
-import com.payments.microservices.msvc_payments.exceptions.InvalidPaymentStatusException;
 import com.payments.microservices.msvc_payments.exceptions.PaymentException;
-import com.payments.microservices.msvc_payments.exceptions.PaymentProcessingException;
 import com.payments.microservices.msvc_payments.exceptions.ResourceNotFoundException;
 import com.payments.microservices.msvc_payments.repositories.PaymentRepository;
-import com.payments.microservices.msvc_payments.request.CreditCardPaymentRequest;
 import com.payments.microservices.msvc_payments.request.PaymentCreateRequest;
 import com.payments.microservices.msvc_payments.request.PaymentInfoUpdateRequest;
-import com.payments.microservices.msvc_payments.request.PaymentProcessingRequest;
+
 import com.payments.microservices.msvc_payments.request.PaymentStatusUpdateRequest;
-import com.payments.microservices.msvc_payments.response.PaymentProviderResponse;
+
 import com.payments.microservices.msvc_payments.response.PaymentResponse;
 
 import feign.FeignException;
@@ -255,52 +248,7 @@ public boolean paymentExistsForAppointment(Long appointmentId) { //falta esto
 }
 //validaciones para logica de negocio
 
-    private PaymentProcessingResult processPaymentByMethod (Payment payment){
-        PaymentMethod method = payment.getPaymentMethod();
 
-        try {
-            switch (method) {
-                 case CREDIT_CARD:
-                    return processCreditCardPayment;   //estos hay que hacerlos todos, cada uno procesa un pago distinto
-                   
-                 case DEBIT_CARD:
-                    return processDebitCardPayment;
-                 case BANK_TRANSFER:
-                 return processBankTransferPayment;
-
-                 case DIGITAL_WALLET:
-                 return processDigitalWalletPayment;      
-
-                 case CRYPTO:
-                 return processCryptoPayment;   
-
-                default:
-                    throw new InvalidPaymentMethodException("Unsupported payment method.");
-            }
-        } catch (PaymentException e) {
-            throw new PaymentException("Service unavailable.");
-        }
-    }
-
-    private PaymentProcessingResult processCreditCardPayment(Payment payment,  PaymentProcessingRequest processingRequest){
-        CreditCardPaymentRequest request = CreditCardPaymentRequest.builder()
-        .transactionId(payment.getTransactionId())
-        .amount(payment.getAmount())
-        .currency(payment.getCurrency())
-        .cardToken(processingRequest.getCardToken())
-        .cardNumber(processingRequest.getCardNumber())
-        .description(payment.getDescription())
-        .cardCvv(processingRequest.getCardCvv())
-        .build();
-        
-        //llamamos al servicio extenero(REVISAR) 
-        PaymentProviderResponse providerResponse = 
-
-        return PaymentProcessingResult.builder();
-        
-
-        
-    }
 //Validaciones para updates/deletes y demás
 
   public void validateUserPermissions(Payment payment,Long userId){

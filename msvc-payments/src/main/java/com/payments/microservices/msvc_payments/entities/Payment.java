@@ -121,6 +121,14 @@ private LocalDateTime expiresAt;
 
 private String cardToken;
 
+private String providerName;
+
+private String providerTransactionId;
+
+private String providerPaymentUrl;
+
+
+
 
  public void markAsPaid(String transactionId) {
         this.paymentStatus = PaymentStatus.COMPLETED;
