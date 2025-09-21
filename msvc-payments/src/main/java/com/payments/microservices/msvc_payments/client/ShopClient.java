@@ -11,4 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface ShopClient { 
     @GetMapping("/api/shop/get-by-id/{shopId}")
     Map<String, Object> getShopById(@PathVariable("shopId") Long id);
+
+    boolean isShopOwner(Long shopId, Long userId);
 }

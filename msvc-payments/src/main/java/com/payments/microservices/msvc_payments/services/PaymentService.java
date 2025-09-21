@@ -7,14 +7,10 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.payments.microservices.msvc_payments.client.AppointmentClient;
 import com.payments.microservices.msvc_payments.client.ShopClient;
 import com.payments.microservices.msvc_payments.client.UserClient;
 import com.payments.microservices.msvc_payments.config.PaymentMapper;
-import com.payments.microservices.msvc_payments.dto.AppointmentDto;
-import com.payments.microservices.msvc_payments.dto.ShopDto;
-import com.payments.microservices.msvc_payments.dto.UserDto;
 import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentStatus;
 import com.payments.microservices.msvc_payments.exceptions.PaymentException;
@@ -22,12 +18,10 @@ import com.payments.microservices.msvc_payments.exceptions.ResourceNotFoundExcep
 import com.payments.microservices.msvc_payments.repositories.PaymentRepository;
 import com.payments.microservices.msvc_payments.request.PaymentCreateRequest;
 import com.payments.microservices.msvc_payments.request.PaymentInfoUpdateRequest;
-
 import com.payments.microservices.msvc_payments.request.PaymentStatusUpdateRequest;
-
 import com.payments.microservices.msvc_payments.response.PaymentResponse;
 
-import feign.FeignException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,56 +37,25 @@ private final PaymentMapper paymentMapper;
 private final PaymentValidationService paymentValidationService;
 private final ExternalServiceValidation externalServiceValidation;
 private final PaymentProcessingService paymentProcessingService;
+private final PaymentAuthorizationService paymentAuthorizationService;
 
 //LO QUE VA EN EL SERVICIO PRINCIPAL
 @Override
 public PaymentResponse createPayment(PaymentCreateRequest request) {
-   //validamos si el usuario existe:
-try {
-    UserDto user = userClient.getUserById(request.getUserId());
-    if (user == null) {
-        throw new IllegalArgumentException("User not found.");
-    }
-} catch (FeignException.NotFound e) {
-   throw new IllegalArgumentException("User not found.");
-}
-catch (FeignException e){
-throw new RuntimeException("User service not available, try again later.");
-}
-
-//validamos que la tienda exista
-try {
-    ShopDto shop = (ShopDto) shopClient.getShopById(request.getShopId());
-    if (shop == null) {
-        throw new IllegalArgumentException("Shop not found");
-    }
-} catch (FeignException.NotFound e) {
-    throw new IllegalArgumentException("Shop not found");
-} catch(FeignException e){
- throw new RuntimeException("Shop service not available, try again later.");
-}
-
-//validar que la cita existe y puede ser pagada
-AppointmentDto appointment;
-try {
-    appointment = appointmentClient.getAppointmentById(request.getAppointmentId());
-    if (appointment == null) {
-       throw new IllegalArgumentException("Appointment not found."); 
-    }
-} catch (FeignException.NotFound e) {
-    throw new IllegalArgumentException("Appointment not found");
-} 
-catch(FeignException e){
-   throw new IllegalArgumentException("Appointment service not available, try again later.");
-}
-
-//validaciones para la lógica del negocio 
-
-Payment payment = paymentMapper.toEntity(request, appointment);
-
-Payment savedPayment = paymentRepository.save(payment);
-
-return paymentMapper.toResponseDto(savedPayment);
+    log.info("Creating payment for appointment: {}", request.getAppointmentId());
+        
+        // usamos servicio de validacion externa
+        ValidationContext validationContext = externalServiceValidation.validateExternalEntities(request);
+        
+        // validamos logica de negocio
+        paymentValidationService.validatePaymentCreation(request, validationContext.getAppointment());
+        
+        // creamos y guardamos pago
+        Payment payment = paymentMapper.toEntity(request, validationContext.getAppointment());
+        Payment savedPayment = paymentRepository.save(payment);
+        
+        log.info("Payment created successfully with ID: {}", savedPayment.getId());
+        return paymentMapper.toResponseDto(savedPayment);
 }
 
 @Override

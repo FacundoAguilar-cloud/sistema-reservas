@@ -66,7 +66,7 @@ private void validateIfUserCanPayAppointment(Long userId, AppointmentDto appoint
 }
 
 private void validateIfPaymentDoesNotExist(Long appointmentId){ 
-    if (!paymentRepository.existsByAppointmentId(appointmentId)) {
+    if (paymentRepository.existsByAppointmentId(appointmentId)) {
         throw new IllegalStateException("Payment already exist for this appointment.");
     }
 }
