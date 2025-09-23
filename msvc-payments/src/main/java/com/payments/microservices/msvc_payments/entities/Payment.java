@@ -92,6 +92,14 @@ private String cardLastFour;
 @Column(name = "card_holder_name")
 @Size(max = 30, message = "Name cannot exceed 30 characters")
 private String cardHolderName;
+@Column(name =  "card_holder_email")
+@Size(max = 60, message = "card holder email cannot exceed 60 characters")
+private String cardHolderEmail;
+
+@Column(name = "card_holder_document_number")
+private String cardHolderDocumentNumber;
+
+private String PaymentMethodId;
 
 @Column(name = "refund_amount", precision = 12, scale = 2)
 private BigDecimal refundAmount;
