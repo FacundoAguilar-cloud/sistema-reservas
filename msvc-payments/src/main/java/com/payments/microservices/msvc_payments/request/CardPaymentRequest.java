@@ -13,7 +13,7 @@ import lombok.AllArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreditCardPaymentRequest extends PaymentRequest {
+public class CardPaymentRequest extends PaymentRequest {
 
 private String transactionId;
 private BigDecimal amount;
@@ -31,7 +31,7 @@ private String cardHolderDocumentNumber;
 private Long customerId;
 private String paymentMethodId; //Tipo de red de tarjeta (visa, mastercard, etc)
 
-public CreditCardPaymentRequest(BigDecimal amount, String description){
+public CardPaymentRequest(BigDecimal amount, String description){
     super(amount, description);
 }
 

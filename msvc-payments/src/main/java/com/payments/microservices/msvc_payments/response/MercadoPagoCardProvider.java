@@ -1,6 +1,6 @@
 package com.payments.microservices.msvc_payments.response;
 
-import org.antlr.v4.runtime.misc.ObjectEqualityComparator;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -16,12 +16,12 @@ import org.springframework.web.client.RestTemplate;
 import com.mercadopago.MercadoPagoConfig;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.providers.PaymentProvider;
-import com.payments.microservices.msvc_payments.request.CreditCardPaymentRequest;
+import com.payments.microservices.msvc_payments.request.CardPaymentRequest;
 
 import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
-public class MercadoPagoCardProvider implements PaymentProvider <CreditCardPaymentRequest> {
+public class MercadoPagoCardProvider implements PaymentProvider <CardPaymentRequest> {
 
  private final MercadoPagoConfig config;
  private final RestTemplate template; 
@@ -33,10 +33,8 @@ public class MercadoPagoCardProvider implements PaymentProvider <CreditCardPayme
  }
 
 
-
-
 	@Override
-	public PaymentProviderResponse processPayment(CreditCardPaymentRequest request) {
+	public PaymentProviderResponse processPayment(CardPaymentRequest request) {
 		try {
 			//crear request para la API de MP
 		Map <String, Object> paymentData = buildMercadoPagoRequest(request);
@@ -56,10 +54,11 @@ public class MercadoPagoCardProvider implements PaymentProvider <CreditCardPayme
 		} catch (Exception e) {
 			log.error("Error proccessing pay with card", e.getMessage());
 		}
+		return null;
 		
 	}
 
-	private Map <String, Object> buildMercadoPagoRequest(CreditCardPaymentRequest request){
+	private Map <String, Object> buildMercadoPagoRequest(CardPaymentRequest request){
 		Map <String, Object> paymentData = new 	HashMap<>();
 		paymentData.put("transaction_amount", request.getAmount());
         paymentData.put("token", request.getCardToken());
@@ -84,9 +83,8 @@ public class MercadoPagoCardProvider implements PaymentProvider <CreditCardPayme
 		return paymentData;
 	}
 
-	public boolean supportsPaymentMethod(PaymentMethod paymentMethod) {
-		return paymentMethod == PaymentMethod.CREDIT_CARD || paymentMethod == PaymentMethod.DEBIT_CARD;
-	}
+	
+
 
 	private PaymentProviderResponse processApiResponse(Map<String, Object> response){
 		String status = (String) response.get("status");
@@ -105,6 +103,17 @@ public class MercadoPagoCardProvider implements PaymentProvider <CreditCardPayme
 		// Implement logic to check if provider is available
 		return true;
 	}
+
+
+
+	public boolean supportsPaymentMethod(PaymentMethod paymentMethod) {
+		return paymentMethod == PaymentMethod.CREDIT_CARD || paymentMethod == PaymentMethod.DEBIT_CARD;
+	}
+
+
+
+
+	
 
 
 	

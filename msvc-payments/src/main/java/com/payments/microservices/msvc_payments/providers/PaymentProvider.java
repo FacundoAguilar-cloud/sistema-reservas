@@ -1,5 +1,6 @@
 package com.payments.microservices.msvc_payments.providers;
 
+import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.response.PaymentProviderResponse;
 
 public interface PaymentProvider <T> {
@@ -9,5 +10,5 @@ String getProviderName();
 
 boolean isAvailable();
 
-boolean supportsPaymentMethod();
+boolean supportsPaymentMethod(PaymentMethod paymentMethod);
 }
