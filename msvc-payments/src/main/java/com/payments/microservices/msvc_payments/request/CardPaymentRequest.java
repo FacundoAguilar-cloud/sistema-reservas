@@ -2,6 +2,8 @@ package com.payments.microservices.msvc_payments.request;
 
 import java.math.BigDecimal;
 
+import com.payments.microservices.msvc_payments.entities.PaymentMethod;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,6 +30,7 @@ private String cardHolderEmail;
 private String cardHolderDocumentType;
 private String cardHolderDocumentNumber;
 
+private PaymentMethod paymentType; // para que podamos diferenciar credito de debito
 private Long customerId;
 private String paymentMethodId; //Tipo de red de tarjeta (visa, mastercard, etc)
 

@@ -1,12 +1,15 @@
 package com.payments.microservices.msvc_payments.response;
 
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,10 +21,15 @@ import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.providers.PaymentProvider;
 import com.payments.microservices.msvc_payments.request.CardPaymentRequest;
 
+
 import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class MercadoPagoCardProvider implements PaymentProvider <CardPaymentRequest> {
+
+	@Value(value = "${MERCADOPAGO_ACCESS_TOKEN}") //el token de acceso que tambien va a estar en el app.properties
+    private String accessToken;
+    
 
  private final MercadoPagoConfig config;
  private final RestTemplate template; 
@@ -35,26 +43,29 @@ public class MercadoPagoCardProvider implements PaymentProvider <CardPaymentRequ
 
 	@Override
 	public PaymentProviderResponse processPayment(CardPaymentRequest request) {
+		log.info("Processing payment for transaction", request.getPaymentType(), request.getTransactionId());
 		try {
+
+		 validateRequest(request);		
 			//crear request para la API de MP
-		Map <String, Object> paymentData = buildMercadoPagoRequest(request);
+		 Map <String, Object> paymentData = buildMercadoPagoRequest(request);
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.setBearerAuth(MercadoPagoConfig.getAccessToken());
+		 HttpHeaders headers = new HttpHeaders();
+		 headers.setContentType(MediaType.APPLICATION_JSON);
+		 headers.setBearerAuth(MercadoPagoConfig.getAccessToken());
 
-		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(paymentData, headers);
+		 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(paymentData, headers);
 
 		
-		String apiUrl = "https://api.mercadopago.com/v1/payments"; 
-		ResponseEntity <Map> response = template.exchange(apiUrl,
-		HttpMethod.POST, entity, Map.class );
+		 String apiUrl = "https://api.mercadopago.com/v1/payments"; 
+		 ResponseEntity <Map> response = template.exchange(apiUrl,
+		 HttpMethod.POST, entity, Map.class );
 
-		return processApiResponse(response.getBody()); //esto tmb va a tener que hacerse
-		} catch (Exception e) {
+		 return processApiResponse(response.getBody()); //esto tmb va a tener que hacerse
+		 } catch (Exception e) {
 			log.error("Error proccessing pay with card", e.getMessage());
-		}
-		return null;
+		 }
+		 return null;
 		
 	}
 
@@ -86,9 +97,72 @@ public class MercadoPagoCardProvider implements PaymentProvider <CardPaymentRequ
 	
 
 
-	private PaymentProviderResponse processApiResponse(Map<String, Object> response){
+	private PaymentProviderResponse processApiResponse(Map<String, Object> response, CardPaymentRequest request){
+		if (response == null) {
+			return PaymentProviderResponse.builder()
+			.success(false)
+			.errorCode("MP_NO_RESPONSE")
+			.message("No response from Mercado Pago.")
+			.build();
+		}
 		String status = (String) response.get("status");
-	}
+		String statusDetail = (String) response.get("status_detail");
+		Object idObj = response.get("id");
+
+		if (idObj == null) {
+			return PaymentProviderResponse.builder()
+			.success(false)
+			.errorCode("MP_NO_ID")
+			.message("No transaction id received")
+			.build();
+		}
+
+		String transactionId = idObj.toString();
+		boolean isSuccessfull = "approved".equals(status);
+
+		PaymentProviderResponse.PaymentProviderResponseBuilder builder = PaymentProviderResponse.builder()
+		.success(isSuccessfull)
+		.transactionId(transactionId)
+		.status(status)
+		.amount(request.getAmount())
+		.currency(request.getCurrency())
+		.processedAt(LocalDateTime.now());
+
+		     switch (status) {
+            case "approved":
+                builder.message("Payment approved successfully");
+                break;
+            case "pending":
+                builder.message("Payment pending: " + statusDetail);
+                break;
+            case "rejected":
+                builder.message("Payment rejected: " + statusDetail);
+                builder.errorCode("MP_REJECTED");
+                break;
+            case "cancelled":
+                builder.message("Payment cancelled");
+                builder.errorCode("MP_CANCELLED");
+                break;
+            default:
+                builder.message("Unknown status: " + status);
+                builder.errorCode("MP_UNKNOWN_STATUS");
+        }
+		
+			   Map<String, String> metadata = new HashMap<>();
+        if (response.containsKey("card")) {
+            Map<String, Object> cardInfo = (Map<String, Object>) response.get("card");
+            if (cardInfo.containsKey("last_four_digits")) {
+                metadata.put("card_last_four", cardInfo.get("last_four_digits").toString());
+            }
+            if (cardInfo.containsKey("first_six_digits")) {
+                metadata.put("card_first_six", cardInfo.get("first_six_digits").toString());
+            }
+        }
+        
+        return builder.metadata(metadata).build();
+    }
+
+	
 
 
 
@@ -108,6 +182,24 @@ public class MercadoPagoCardProvider implements PaymentProvider <CardPaymentRequ
 
 	public boolean supportsPaymentMethod(PaymentMethod paymentMethod) {
 		return paymentMethod == PaymentMethod.CREDIT_CARD || paymentMethod == PaymentMethod.DEBIT_CARD;
+	}
+
+	private void validateRequest(CardPaymentRequest request){
+		if (request.getCardToken() == null|| request.getCardToken().trim().isEmpty()) {
+			throw new IllegalArgumentException("Card token is required");
+		}
+
+		if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+			throw new IllegalArgumentException("Amount must be greater than zero");
+		}
+
+		if (request.getCardHolderEmail() == null || request.getCardHolderEmail().trim().isEmpty() )  {
+			throw new IllegalArgumentException("Cardholder email is required");
+		}
+
+		if (request.getCardHolderDocumentNumber() == null || request.getCardHolderDocumentNumber().trim().isEmpty()) {
+			throw new IllegalArgumentException("Document number is required");
+		}
 	}
 
 
