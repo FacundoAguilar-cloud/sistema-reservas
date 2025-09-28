@@ -61,7 +61,7 @@ public class MercadoPagoCardProvider implements PaymentProvider <CardPaymentRequ
 		 ResponseEntity <Map> response = template.exchange(apiUrl,
 		 HttpMethod.POST, entity, Map.class );
 
-		 return processApiResponse(response.getBody()); //esto tmb va a tener que hacerse
+		 return processApiResponse(response.getBody(), request); //esto tmb va a tener que hacerse
 		 } catch (Exception e) {
 			log.error("Error proccessing pay with card", e.getMessage());
 		 }

@@ -51,6 +51,7 @@ private final MercadoPagoCardProvider cardProvider;
         .cardHolderDocumentType("DNI")
         .cardHolderDocumentNumber(payment.getCardHolderDocumentNumber())
         .paymentMethodId(payment.getPaymentMethodId())
+        .paymentType(PaymentMethod.DEBIT_CARD)
         .description(payment.getDescription())
         .customerId(payment.getCustomerId())
         .cardToken(payment.getCardToken()) //esto deberia venir tokenizado, crear un metodo
@@ -63,5 +64,9 @@ private final MercadoPagoCardProvider cardProvider;
     public PaymentMethod getSupportedMethod() {
         return PaymentMethod.DEBIT_CARD;
     }
+
+    private String detectPaymentMethodId(Payment payment){
+        return "visa";
+    } 
 
 }

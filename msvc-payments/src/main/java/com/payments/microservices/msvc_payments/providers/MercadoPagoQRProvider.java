@@ -4,11 +4,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.merchantorder.MerchantOrderClient;
 import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.resources.merchantorder.MerchantOrder;
+import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.request.QRPaymentRequest;
 import com.payments.microservices.msvc_payments.response.PaymentProviderResponse;
 
@@ -18,9 +21,9 @@ import jakarta.annotation.PostConstruct;
 public class MercadoPagoQRProvider implements QRPaymentProvider {
 
 private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MercadoPagoQRProvider.class);
-
+    @Value("${MERCADOPAGO_ACCESS_TOKEN}")
     private String accesstoken;
-
+    //aca tmb deberiamos tener esto en el properties
     private String webhookUrl;
 
     private PaymentClient paymentClient;
@@ -29,6 +32,9 @@ private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MercadoPa
 
     @PostConstruct
     public void init(){
+        if (accesstoken == null || accesstoken.trim().isEmpty()) {
+            logger.error("MercadoPago access token not configured");
+        }
         MercadoPagoConfig.setAccessToken(accesstoken);
         this.paymentClient = new PaymentClient();
         this.merchantOrderClient = new MerchantOrderClient();
@@ -39,16 +45,18 @@ private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MercadoPa
       logger.info("Processing QR Payment{}", request.getAmount());
 
       try {
-        //esto es simulacion, aca iria la integracion con MP
-        String simulatedTransactionId = "MP_" + System.currentTimeMillis();
+        validateQRRequest(request);
 
-        String simulatedQR = "https://www.mercadopago.com/qr/" + simulatedTransactionId;
+        MerchantOrder merchantOrder = createMerchantOrder(request);
+
+        String  qrData = generateQrData(merchantOrder);
+        
 
         return PaymentProviderResponse.builder()
         .success(true)
-        .transactionId(simulatedTransactionId)
-        .qrCode(simulatedQR)
-        .paymentUrl(simulatedQR)
+        .transactionId(merchantOrder.getId().toString())
+        .qrCode(qrData)
+        .paymentUrl(qrData)
         .status("PENDING")
         .message("QR generated correctly.")
         .amount(request.getAmount())
@@ -62,20 +70,11 @@ private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MercadoPa
         .success(false)
         .errorCode("MP_ERROR")
         .message("Error generating QR" + e.getMessage())
+        .amount(request.getAmount())
+        .currency(request.getCurrency())
+        .processedAt(LocalDateTime.now())
         .build();
       }
-    }
-
-    @Override
-    public String getProviderName() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getProviderName'");
-    }
-
-    @Override
-    public boolean isAvailable() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'isAvailable'");
     }
 
     @Override
@@ -87,15 +86,50 @@ private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MercadoPa
 
     @Override
     public PaymentProviderResponse checkQRPaymentStatus(String qrId) {
-        return PaymentProviderResponse.builder()
-        .success(true)
-        .transactionId(qrId)
-        .status("PENDING")
-        .message("Status queried correctly. ")
-        .build();
+        try {
+            MerchantOrder merchantOrder = merchantOrderClient.get(Long.valueOf(qrId));
+
+            String status = determinePaymentStatus(merchantOrder);
+            BigDecimal paidAmount = merchantOrder.getPaidAmount();
+            return PaymentProviderResponse.builder()
+            .success(true)
+            .transactionId(qrId)
+            .status("PENDING")
+            .amount(paidAmount)
+            .currency("ARS")
+            .message("Status queried correctly.")
+            .processedAt(LocalDateTime.now())
+            .build();
+        } catch (Exception e) {
+            logger.error("Error checking QR payment status.", e);
+            return PaymentProviderResponse.builder()
+            .success(false)
+            .errorCode("MP_STATUS_ERROR")
+            .message("Error checking payment status." + e.getMessage())
+            .build();
+        }
+        
+        
     }
 
     @Override
+    public String getProviderName() {
+        return "Mercado Pago QR";
+    }
+
+    @Override
+    public boolean isAvailable() {
+        try {
+            return accesstoken != null && !accesstoken.trim().isEmpty() && paymentClient != null && merchantOrderClient != null;
+        } catch (Exception e) {
+            logger.warn("Mercado Pago QR not available", e);
+            return false;
+        }
+    }
+
+    
+
+    @Override //tener en cuenta que MP no permite cancelar pagos directamente, podriamos ver si esto hay que sacarlo o lo dejamos para darle otra utilidad
     public PaymentProviderResponse cancelQRPayment(String qrId) {
        return PaymentProviderResponse.builder()
        .success(true)
@@ -106,9 +140,18 @@ private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MercadoPa
     }
 
     @Override
-    public boolean supportsPaymentMethod() {
+    public boolean supportsPaymentMethod(PaymentMethod paymentMethod) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'supportsPaymentMethod'");
+    }
+
+    private void validateQRRequest(QRPaymentRequest request){
+        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be grater than zero.");
+        }
+        if (request.getDescription() == null || request.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("Desciption is required");
+        }
     }
 
 }

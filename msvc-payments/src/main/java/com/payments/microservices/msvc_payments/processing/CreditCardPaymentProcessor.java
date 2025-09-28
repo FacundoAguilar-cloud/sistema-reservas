@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.entities.PaymentProcessingResult;
-import com.payments.microservices.msvc_payments.request.CreditCardPaymentRequest;
+import com.payments.microservices.msvc_payments.request.CardPaymentRequest;
 import com.payments.microservices.msvc_payments.response.MercadoPagoCardProvider;
 import com.payments.microservices.msvc_payments.response.PaymentProviderResponse;
 
@@ -25,7 +25,7 @@ public class CreditCardPaymentProcessor extends BasePaymentProcessor {
         try {
          validatePayment(payment);
 
-         CreditCardPaymentRequest request = buildCreaditCardRequest(payment);
+         CardPaymentRequest request = buildCreaditCardRequest(payment);
          
          PaymentProviderResponse response = cardProvider.processPayment(request);
          
@@ -41,13 +41,9 @@ public class CreditCardPaymentProcessor extends BasePaymentProcessor {
        }
     }
 
-    @Override
-    public PaymentMethod getSupportedMethod() {
-        return PaymentMethod.CREDIT_CARD;
-    }
-
-    private CreditCardPaymentRequest buildCreaditCardRequest(Payment payment){
-        return CreditCardPaymentRequest.builder()
+   
+    private CardPaymentRequest buildCreaditCardRequest(Payment payment){
+        return CardPaymentRequest.builder()
         .transactionId(payment.getTransactionId())
         .amount(payment.getAmount())
         .currency(payment.getCurrency())
@@ -63,6 +59,17 @@ public class CreditCardPaymentProcessor extends BasePaymentProcessor {
         .cardToken(payment.getCardToken()) //esto deberia venir tokenizado, crear un metodo
         .build(); 
     }
+
+     @Override
+    public PaymentMethod getSupportedMethod() {
+        return PaymentMethod.CREDIT_CARD;
+    }
+
+    private String detectPaymentMethodId(Payment payment){
+       
+        return "visa";
+    }
+
 
     
 
