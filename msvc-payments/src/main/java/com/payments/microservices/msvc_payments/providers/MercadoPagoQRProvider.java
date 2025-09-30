@@ -2,6 +2,9 @@ package com.payments.microservices.msvc_payments.providers;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,8 +12,13 @@ import org.springframework.stereotype.Component;
 
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.merchantorder.MerchantOrderClient;
+import com.mercadopago.client.merchantorder.MerchantOrderCreateRequest;
+import com.mercadopago.client.merchantorder.MerchantOrderItemRequest;
 import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.merchantorder.MerchantOrder;
+import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.request.QRPaymentRequest;
 import com.payments.microservices.msvc_payments.response.PaymentProviderResponse;
@@ -23,7 +31,7 @@ public class MercadoPagoQRProvider implements QRPaymentProvider {
 private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MercadoPagoQRProvider.class);
     @Value("${MERCADOPAGO_ACCESS_TOKEN}")
     private String accesstoken;
-    //aca tmb deberiamos tener esto en el properties
+    @Value("${WEBHOOK_BASE_URL:http://localhost:8003}/api/webhooks/mercadopago")
     private String webhookUrl;
 
     private PaymentClient paymentClient;
@@ -141,8 +149,7 @@ private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MercadoPa
 
     @Override
     public boolean supportsPaymentMethod(PaymentMethod paymentMethod) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'supportsPaymentMethod'");
+        return paymentMethod == PaymentMethod.QR;
     }
 
     private void validateQRRequest(QRPaymentRequest request){
@@ -153,5 +160,78 @@ private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MercadoPa
             throw new IllegalArgumentException("Desciption is required");
         }
     }
+    private MerchantOrder createMerchantOrder(QRPaymentRequest request) throws MPException, MPApiException {
+        MerchantOrderItemRequest item = MerchantOrderItemRequest.builder()
+            .title(request.getTitle() != null ? request.getTitle() : request.getDescription())
+            .description(request.getDescription())
+            .quantity(1)
+            .unitPrice(request.getAmount())
+            .currencyId(request.getCurrency())
+            .build();
+            
 
+        MerchantOrderCreateRequest.MerchantOrderCreateRequestBuilder builder = MerchantOrderCreateRequest.builder()
+            .externalReference(request.getExternalReference())
+            .items(List.of(item));
+
+        if (request.getNotificationUrl() != null) {
+            builder.notificationUrl(request.getNotificationUrl());
+        } else if (webhookUrl != null) {
+            builder.notificationUrl(webhookUrl);
+        }   
+
+        MerchantOrderCreateRequest orderRequest = builder.build();
+
+        return merchantOrderClient.create(orderRequest);
+    }
+
+    private String generateQrData(MerchantOrder merchantOrder){
+        //en produccion directamente se devuelven datos del QR, por ahora devolvemos una URL "simulada"
+        return String.format("https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=%s",  merchantOrder.getId());
+    }
+
+    private QRPaymentRequest buildQRRequest(Payment payment){
+        return QRPaymentRequest.builder()
+        .transactionId(payment.getId() != null ? payment.getId().toString() : null)
+        .amount(payment.getAmount())
+        .currency(payment.getCurrency())
+        .description(payment.getDescription())
+        .title(payment.getDescription())
+        .externalReference(payment.getExternalReference())
+        .customerId(payment.getCustomerId())
+        .expirationMinutes(30)
+        .metaData(createQRMetadata(payment))
+        .build();
+    }
+
+    private Map <String, String> createQRMetadata(Payment payment){
+        Map <String, String> metadata = new HashMap<>();
+        metadata.put("payment_id", payment.getId().toString());
+        metadata.put("user_id", payment.getUserId().toString());
+        metadata.put("appointment_id", payment.getAppointmentId().toString());
+        metadata.put("shop_id", payment.getShopId().toString());
+        metadata.put("payment_type", "qr");
+        return metadata;
+    }
+
+    private String determinePaymentStatus(MerchantOrder merchantOrder){
+        if (merchantOrder.getOrderStatus() == null) {
+            return "PENDING";
+        }
+        switch (merchantOrder.getOrderStatus()) {
+            case "paid":
+                return "APPROVED";
+            case "paymeny_required":
+                return "PENDING";
+            case "cancelled":    
+                return "CANCELLED";
+            case "expired":
+                return "EXPIRED";    
+        
+            default:
+                return "UNKNOWN";
+        }
+    }
+    
 }
+

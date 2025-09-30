@@ -4,7 +4,7 @@ public enum PaymentMethod {
     CREDIT_CARD("Credit Card"),
     DEBIT_CARD("Debit Card"),
     BANK_TRANSFER("Bank Transfer"),
-    DIGITAL_WALLET("Digital Wallet"),
+    QR("Digital Wallet"),
     CASH("Cash"),
     CRYPTO("Crypto");
 
