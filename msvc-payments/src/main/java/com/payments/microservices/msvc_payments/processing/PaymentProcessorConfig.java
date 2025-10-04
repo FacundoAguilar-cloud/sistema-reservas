@@ -16,13 +16,13 @@ public class PaymentProcessorConfig {
 public Map <PaymentMethod, PaymentProcessor> paymentProcessors(
     CreditCardPaymentProcessor creditCardPaymentProcessor,
     DebitCardPaymentProcessor debitCardPaymentProcessor,
-    QRPaymentProcessor qrPaymentProcessor
+    BankTransferPaymentProcessor bankTransferPaymentProcessor 
 ){
 
 Map<PaymentMethod, PaymentProcessor> processors = new HashMap<>();
 processors.put(PaymentMethod.CREDIT_CARD, creditCardPaymentProcessor);
 processors.put(PaymentMethod.DEBIT_CARD, debitCardPaymentProcessor);
-processors.put(PaymentMethod.QR, qrPaymentProcessor);   
+processors.put(PaymentMethod.BANK_TRANSFER, bankTransferPaymentProcessor);   
 
 return processors;
 

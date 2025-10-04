@@ -1,11 +1,11 @@
 package com.payments.microservices.msvc_payments.processing;
 
-import java.util.HashMap;
-import java.util.Map;
+
 
 import org.springframework.stereotype.Component;
 
-import com.payments.microservices.msvc_payments.client.UserClient;
+
+import com.payments.microservices.msvc_payments.dto.UserDto;
 import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.entities.PaymentProcessingResult;
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BankTransferPaymentProcessor extends BasePaymentProcessor {
 private final MercadoPagoBankTransferProvider transferProvider;
-private final UserClient userClient;
+private final UserDataService userDataService;  
 
     @Override
     public PaymentProcessingResult processPayment(Payment payment) {
@@ -29,7 +29,7 @@ private final UserClient userClient;
        try {
         validatePayment(payment);
 
-        BankTransferPaymentProcessor request = buildBankTransferRequest(payment);
+        BankTransferPaymentRequest request = buildBankTransferRequest(payment);
         PaymentProviderResponse response = transferProvider.processPayment(request);
         if (response.isSuccess()) {
             return buildSuccessResult(response.getTransactionId(), response.getMessage());
@@ -55,30 +55,58 @@ private final UserClient userClient;
             .currency(payment.getCurrency())
             .description(payment.getDescription())
             .externalReference(payment.getExternalReference())
-            .payerEmail(requ)
+            .payerEmail(getPayerEmail(payment))
+            .payerName(getPayerName(payment))
+            .payerDocumentType(getPayerDocumentType(payment))
+            .payerDocumentNumber(getPayerDocumentNumber(payment))
             .customerId(payment.getUserId())
-            .metaData(createQRMetadata(payment))
             .build();
     }
 
-    private Map <String, String> createQRMetadata(Payment payment){
-        Map <String, String> metadata = new HashMap<>();
-        metadata.put("payment_id", payment.getId().toString());
-        metadata.put("user_id", payment.getUserId().toString());
-        metadata.put("appointment_id", payment.getAppointmentId().toString());
-        metadata.put("shop_id", payment .getShopId().toString());
-        metadata.put("payment_type", "qr");
-
-        return metadata;
-
-    }
+   
 
 
     private String getPayerEmail(Payment payment){
-        if (payment.getCardHolderEmail() != null) {
+        if (payment.getCardHolderEmail() != null && !payment.getCardHolderEmail().trim().isEmpty())  {
             return payment.getCardHolderEmail();
         }
-        return userClient.getUserById;
+
+        String userEmail = userDataService.getUserEmail(payment.getUserId());
+        if (userEmail != null) {
+            return userEmail;
+        }
+
+        throw new IllegalArgumentException("Payer email is required for bank transfer, please provide it in the payment request");
+    }
+
+    private String getPayerName(Payment payment){
+        if (payment.getCardHolderName() != null && !payment.getCardHolderName().trim().isEmpty()) {
+            return payment.getCardHolderName();
+        }
+        UserDto user = userDataService.getUserData(payment.getUserId());
+        if (user != null) {
+            return user.getName();
+        }
+        return "Customer";
+    }
+
+    private String getPayerDocumentNumber(Payment payment){
+        if (payment.getCardHolderDocumentNumber() != null 
+        && !payment.getCardHolderDocumentNumber().trim().isEmpty()) {
+            return payment.getCardHolderDocumentNumber();
+        }
+        UserDto user = userDataService.getUserData(payment.getUserId());
+        if (user != null && user.getDocumentNumber() != null) {
+            return user.getDocumentNumber();
+        }
+        throw new IllegalArgumentException("Document number is required for bank transfer");
+    }
+
+    private String getPayerDocumentType(Payment payment) {
+        if (payment.getCardHolderDocumentType() != null) {
+            return payment.getCardHolderDocumentType();
+        }
+        return "DNI";
     }
 
 }

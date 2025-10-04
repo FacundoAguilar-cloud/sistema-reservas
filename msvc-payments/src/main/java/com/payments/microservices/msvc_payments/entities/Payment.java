@@ -99,6 +99,9 @@ private String cardHolderEmail;
 @Column(name = "card_holder_document_number")
 private String cardHolderDocumentNumber;
 
+@Column(name = "card_holder_document_type")
+private String cardHolderDocumentType;
+
 private String PaymentMethodId;
 
 @Column(name = "refund_amount", precision = 12, scale = 2)
