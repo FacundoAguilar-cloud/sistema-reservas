@@ -1,7 +1,7 @@
 package com.payments.microservices.msvc_payments.request;
 
 import java.math.BigDecimal;
-import java.util.Map;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,27 +12,27 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class QRPaymentRequest {
+public class BankTransferPaymentRequest {
 private String transactionId;
 private BigDecimal amount;
 @Builder.Default
 private String currency = "ARS";
 private String externalReference;
-private String notificationUrl;
 private String description;
+
+private String payerEmail;
+private String payerName;
 @Builder.Default
-private Integer expirationMinutes = 30;
+private String payerDocumentType = "DNI";
+private String payerDocumentNumber;
 
-private String title;
 private Long customerId;
-private Map<String, String> metaData;
+private String callbackUrl;
 
-  public QRPaymentRequest(BigDecimal amount, String description) {
-        this.amount = amount;
-        this.description = description;
-        this.currency = "ARS";
-        this.expirationMinutes= 30;
-    }
+
+
+
+
 
     
 

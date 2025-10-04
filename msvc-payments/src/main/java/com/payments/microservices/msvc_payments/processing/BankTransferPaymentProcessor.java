@@ -5,11 +5,12 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import com.payments.microservices.msvc_payments.client.UserClient;
 import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.entities.PaymentProcessingResult;
-import com.payments.microservices.msvc_payments.providers.MercadoPagoQRProvider;
-import com.payments.microservices.msvc_payments.request.QRPaymentRequest;
+import com.payments.microservices.msvc_payments.providers.MercadoPagoBankTransferProvider;
+import com.payments.microservices.msvc_payments.request.BankTransferPaymentRequest;
 import com.payments.microservices.msvc_payments.response.PaymentProviderResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -17,18 +18,19 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class QRPaymentProcessor extends BasePaymentProcessor {
-private final MercadoPagoQRProvider qrProvider;
+public class BankTransferPaymentProcessor extends BasePaymentProcessor {
+private final MercadoPagoBankTransferProvider transferProvider;
+private final UserClient userClient;
 
     @Override
     public PaymentProcessingResult processPayment(Payment payment) {
-       log.info("Processing QR payment.", payment.getId());
+       log.info("Processing bank transfer payment.", payment.getId());
 
        try {
         validatePayment(payment);
 
-        QRPaymentRequest request = buildQRRequest(payment);
-        PaymentProviderResponse response = qrProvider.processPayment(request);
+        BankTransferPaymentProcessor request = buildBankTransferRequest(payment);
+        PaymentProviderResponse response = transferProvider.processPayment(request);
         if (response.isSuccess()) {
             return buildSuccessResult(response.getTransactionId(), response.getMessage());
         }
@@ -43,19 +45,18 @@ private final MercadoPagoQRProvider qrProvider;
 
     @Override
     public PaymentMethod getSupportedMethod() {
-        return PaymentMethod.QR;
+        return PaymentMethod.BANK_TRANSFER;
     }
 
-    private QRPaymentRequest buildQRRequest(Payment payment){
-            return QRPaymentRequest.builder()    
+    private BankTransferPaymentRequest buildBankTransferRequest(Payment payment){
+            return BankTransferPaymentRequest.builder()    
             .transactionId(payment.getTransactionId())
             .amount(payment.getAmount())
             .currency(payment.getCurrency())
             .description(payment.getDescription())
-            .title(payment.getDescription())
             .externalReference(payment.getExternalReference())
+            .payerEmail(requ)
             .customerId(payment.getUserId())
-            .expirationMinutes(30) // 30 minutos por defecto
             .metaData(createQRMetadata(payment))
             .build();
     }
@@ -70,6 +71,14 @@ private final MercadoPagoQRProvider qrProvider;
 
         return metadata;
 
+    }
+
+
+    private String getPayerEmail(Payment payment){
+        if (payment.getCardHolderEmail() != null) {
+            return payment.getCardHolderEmail();
+        }
+        return userClient.getUserById;
     }
 
 }
