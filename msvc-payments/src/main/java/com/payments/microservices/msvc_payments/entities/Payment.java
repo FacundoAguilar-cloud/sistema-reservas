@@ -141,6 +141,7 @@ private String providerPaymentUrl;
 
 
 
+
  public void markAsPaid(String transactionId) {
         this.paymentStatus = PaymentStatus.COMPLETED;
         this.transactionId = transactionId;

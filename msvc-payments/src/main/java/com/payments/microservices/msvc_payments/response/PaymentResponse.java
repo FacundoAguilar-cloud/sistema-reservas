@@ -48,4 +48,6 @@ private String cardHolderName;
 
 private LocalDateTime createdAt;
 
+private String paymentUrl;
+
 }
