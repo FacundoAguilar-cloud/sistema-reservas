@@ -8,6 +8,7 @@ import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.entities.PaymentStatus;
 import com.payments.microservices.msvc_payments.entities.PaymentStatusResponse;
 import com.payments.microservices.msvc_payments.request.PaymentCreateRequest;
+import com.payments.microservices.msvc_payments.response.CanPayResponse;
 import com.payments.microservices.msvc_payments.response.PaymentResponse;
 import com.payments.microservices.msvc_payments.services.PaymentService;
 
@@ -25,15 +26,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 
 
-
-
-
-
-
-
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/payments/qr")
+@RequestMapping("/api/payments/transf")
 @Slf4j
 public class BankTransferPaymentController {
 
@@ -148,9 +143,22 @@ public ResponseEntity <PaymentResponse> cancelBankTransferPayment(@PathVariable 
     return ResponseEntity.noContent().build();
 }
 
-@GetMapping("/appointment/{appointmentId}/canp-pay")
-public String getMethodName(@RequestParam String param) {
-    return new String();
+@GetMapping("/appointment/{appointmentId}/can-pay") //FALTA TERMINAR ESTE METODO EN EL SERVICIO VER
+public ResponseEntity <CanPayResponse> canPayAppointmentByTransfer(@PathVariable Long appointmentId) {
+    log.info("Checking if appointment can be paid by bank transfer.", appointmentId);
+
+    boolean canPay = paymentService.canAppointmentBePaid(appointmentId);
+
+    CanPayResponse response = CanPayResponse.builder()
+    .appointmentId(appointmentId)
+    .canPay(canPay)
+    .paymentMethod("BANK_TRANSFER")
+    .message(canPay ? 
+    "Appointment can be pay by bank transfer." :
+    "Payment already exist for this appointment.")
+    .build();
+
+    return ResponseEntity.ok(response);
 }
 
 

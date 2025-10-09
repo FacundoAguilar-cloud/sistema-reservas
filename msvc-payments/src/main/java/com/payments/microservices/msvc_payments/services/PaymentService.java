@@ -11,6 +11,8 @@ import com.payments.microservices.msvc_payments.client.AppointmentClient;
 import com.payments.microservices.msvc_payments.client.ShopClient;
 import com.payments.microservices.msvc_payments.client.UserClient;
 import com.payments.microservices.msvc_payments.config.PaymentMapper;
+import com.payments.microservices.msvc_payments.dto.AppointmentDto;
+import com.payments.microservices.msvc_payments.dto.AppointmentStatus;
 import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentStatus;
 import com.payments.microservices.msvc_payments.exceptions.PaymentException;
@@ -199,10 +201,59 @@ public PaymentResponse confirmPayment(Long paymentId, String transactionId) {
 
    return paymentMapper.toResponseDto(payment);
 }
+
+public PaymentResponse confirmPaymentForWebhook(String paymentId, String transactionId) {
+    Payment payment = paymentRepository.findByPaymentId(paymentId)
+        .orElseThrow(() -> new ResourceNotFoundException("Payment not found."));
+    
+    if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+        log.warn("Attempt to confirm non-pending payment: {}", paymentId);
+        return paymentMapper.toResponseDto(payment);
+    }
+
+    payment.markAsPaid(transactionId);
+    paymentRepository.save(payment);
+
+    log.info("Payment {} confirmed via webhook", paymentId);
+    return paymentMapper.toResponseDto(payment);
+}
 @Override
 public boolean canAppointmentBePaid(Long appointmentId) { //falta esto
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'canAppointmentBePaid'");
+    boolean paymentExists = paymentRepository.existsByAppointmentId(appointmentId);
+
+    if (paymentExists) {
+        log.info("Payment already exists for appointment.", appointmentId);
+        return false;
+    }
+
+    try {
+        AppointmentDto appointment = appointmentClient.getAppointmentById(appointmentId);
+
+        if (appointment == null ) {
+            log.warn("Appointment not found.", appointmentId);
+            return false;
+        }
+
+        if (appointment.getStatus() != AppointmentStatus.PENDING && 
+        appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+            log.info("Appointment has invalid status for payment", appointmentId, appointment.getStatus());
+            return false;
+        }
+
+        if (appointment.getCancelledAt() != null) {
+            log.info("Appointment is cancelled.", appointmentId);
+            return false;
+        }
+        if (appointment.getAppointmentDate().isBefore(LocalDate.now())) {
+            log.info("appointment is in the past.", appointmentId);
+            return false;
+        }
+        log.debug("Appointment can be paid.", appointmentId);
+        return true;
+    } catch (Exception e) {
+        log.error("Error checking if appointment can be pais", appointmentId, e);
+        return false;
+    }
 }
 @Override
 public boolean paymentExistsForAppointment(Long appointmentId) { //falta esto
