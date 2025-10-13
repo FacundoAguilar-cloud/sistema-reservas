@@ -29,6 +29,8 @@ public class MercadoPagoCardProvider implements PaymentProvider <CardPaymentRequ
 
 	@Value(value = "${MERCADOPAGO_ACCESS_TOKEN}") //el token de acceso que tambien va a estar en el app.properties
     private String accessToken;
+
+	 private static final String PAYMENTS_URL = "https://api.mercadopago.com/v1/payments";
     
 
  private final MercadoPagoConfig config;
@@ -162,9 +164,104 @@ public class MercadoPagoCardProvider implements PaymentProvider <CardPaymentRequ
         return builder.metadata(metadata).build();
     }
 
+	public PaymentProviderResponse refundPayment(String transactionId, BigDecimal amount){
+		log.info("Processing refund for transaction ", transactionId, amount);
+
+		try {
+			String refundUrL = PAYMENTS_URL + "/" + transactionId + "/refunds";
+
+			Map <String, Object> refundData = new HashMap<>();
+
+			if (amount != null) {
+				refundData.put("amount", amount);
+			}
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			headers.setBearerAuth(accessToken);
+
+			HttpEntity <Map<String, Object>> entity = new HttpEntity<>(refundData, headers);
+
+			ResponseEntity <Map> response = template.exchange(refundUrL, HttpMethod.POST, entity, Map.class);
+
+			return processRefundResponse(response.getBody(), transactionId, amount);
+
+		} catch (Exception e) {
+			log.error("Error processing refund for transaction", transactionId, e);
+
+			return PaymentProviderResponse.builder()
+			.success(false)
+			.errorCode("MP_REFUND_CODE")
+			.message("Error processing refund" + e.getMessage())
+			.transactionId(transactionId)
+			.build();
+		}
+	}
+
+	public PaymentProviderResponse getRefundStatus(String refundId){
+		log.info("Getting status from refund.", refundId);
+
+		try {
+			String statusUrl = PAYMENTS_URL + "/refunds/" + refundId;
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setBearerAuth(accessToken);
+
+			HttpEntity <Void> entity = new HttpEntity<>(headers);
+
+			ResponseEntity <Map> response = template.exchange(statusUrl, HttpMethod.GET, entity, Map.class);
+
+			return processRefundResponse(response.getBody(), refundId, null);
+
+		} catch (Exception e) {
+			log.error("Error getting status from refund", refundId, e);
+
+			return PaymentProviderResponse .builder()
+			.success(false)
+			.errorCode("MP_REFUND_STATUS_ERROR")
+			.message("Error getting refund" + e.getMessage())
+			.transactionId(refundId)
+			.build();
+		}
+	}
+
+	 private PaymentProviderResponse processRefundResponse(Map<String, Object> response, 
+                                                         String transactionId, 
+                                                         BigDecimal requestedAmount) {
+        if (response == null) {
+            return PaymentProviderResponse.builder()
+                .success(false)
+                .errorCode("MP_NO_RESPONSE")
+                .message("No response from MercadoPago")
+                .build();
+        }
+        
+        String status = (String) response.get("status");
+        Object idObj = response.get("id");
+        Object amountObj = response.get("amount");
+        
+        String refundId = idObj != null ? idObj.toString() : null;
+        BigDecimal refundedAmount = amountObj != null ? 
+            new BigDecimal(amountObj.toString()) : requestedAmount;
+        
+        boolean isSuccessful = "approved".equals(status);
+        
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("original_transaction_id", transactionId);
+        metadata.put("refund_id", refundId);
+        
+        return PaymentProviderResponse.builder()
+            .success(isSuccessful)
+            .transactionId(refundId != null ? refundId : transactionId)
+            .status(status)
+            .amount(refundedAmount)
+            .processedAt(LocalDateTime.now())
+            .message(isSuccessful ? "Refund approved" : "Refund rejected")
+            .metadata(metadata)
+            .build();
+    }
+
 	
-
-
 
 
 	@Override

@@ -6,22 +6,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.entities.PaymentStatus;
 import com.payments.microservices.msvc_payments.entities.PaymentStatusResponse;
 import com.payments.microservices.msvc_payments.request.PaymentCreateRequest;
-import com.payments.microservices.msvc_payments.request.PaymentStatusUpdateRequest;
+import com.payments.microservices.msvc_payments.request.RefundRequest;
 import com.payments.microservices.msvc_payments.response.CanPayResponse;
 import com.payments.microservices.msvc_payments.response.PaymentResponse;
 import com.payments.microservices.msvc_payments.services.PaymentService;
-
+import com.payments.microservices.msvc_payments.services.RefundService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +37,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class CreditCardPaymentController {
 
 private final PaymentService paymentService;
+private final RefundService refundService;
 
 public ResponseEntity <PaymentResponse> createCreditCardPayment(@Valid @RequestBody com.payments.microservices.msvc_payments.request.PaymentCreateRequest request){
     log.info("Creating credit card payment for appointment", +  request.getAppointmentId(), request.getUserId());
@@ -130,27 +128,14 @@ public ResponseEntity <PaymentStatusResponse> checkCreditCardStatus(@PathVariabl
 }
 
 @PostMapping("/refund/{paymentId}")
-public ResponseEntity <PaymentResponse> refundCreditCardPayment(@PathVariable Long paymentId, @RequestParam Long userId) {
-    log.info("Requesting refund for credit card payment.", paymentId, userId);
+public ResponseEntity <PaymentResponse> refundCreditCardPayment(@PathVariable Long paymentId, @RequestBody RefundRequest request) {
+   log.info("Requesting refund for debit card payment.", paymentId);
 
-    PaymentResponse payment = paymentService.getPaymentById(paymentId);
+  PaymentResponse response = refundService.processFullRefund(paymentId, request.getUserId(), request.getReason());
 
-    if (payment.getPaymentMethod() != PaymentMethod.CREDIT_CARD) {
-        throw new IllegalArgumentException("Payment is not a credit card payment.");
-    }
+  return ResponseEntity.ok(response);
 
-    if (payment.getPaymentStatus() != PaymentStatus.COMPLETED) {
-        throw new IllegalArgumentException("Only completed payments can be cancelled.");
-    }
-    
-    PaymentStatusUpdateRequest refundRequest = new PaymentStatusUpdateRequest();
-    refundRequest.setPaymentStatus(PaymentStatus.REFUNDED); //esto vamos a tener que trabajarlo con la logica de MP
-
-    PaymentResponse response = paymentService.updatePaymentStatus(refundRequest, paymentId, userId);
-
-    log.info("Credit card payment refund requested",  paymentId);
-
-     return ResponseEntity.ok(response);
+   
 }
 
 @GetMapping("/appointment/{appointmentId}/can-pay")
