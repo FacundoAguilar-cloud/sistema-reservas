@@ -43,6 +43,8 @@ List <Payment> findRefoundedPayments(PaymentStatus paymentStatus);
 //verifica si existe un pago para una cita específica
 boolean existsByAppointmentId(Long appointmentId);
 
+Optional<Payment> findByIdempotencyKey(String idempotencyKey);
+
 
 //por ahora voy a dejar estos metodos dentro del repositorio pero a partir de que siga el desarrollo se puede ir agregando más según necesitemos
 
