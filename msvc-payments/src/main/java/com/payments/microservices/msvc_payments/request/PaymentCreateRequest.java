@@ -17,6 +17,10 @@ public class PaymentCreateRequest {
 
 private Long userId;
 
+private String userIp;
+
+private String userAgent;
+
 private Long appointmentId;
 
 private Long shopId;

@@ -49,6 +49,29 @@ public void validateAmount(BigDecimal amount){
     }
 
 
+   public void validateAmountMatchesAppointment(BigDecimal paymentAmount, BigDecimal appointmentPrice){
+        if (appointmentPrice == null ) {
+            log.warn("Appointment price is null, skipping validation");
+            return;
+        }
+
+        if (paymentAmount.compareTo(appointmentPrice) != 0) {
+            log.error("Appointment amount mismatch", paymentAmount, appointmentPrice);
+            throw new PaymentException(String.format("Payment amount does not match appointment price", paymentAmount, appointmentPrice, null) );
+        }
+    }
+
+    public void validateDayLimit(BigDecimal amount, BigDecimal currentDailyTotal){
+        BigDecimal newTotal = currentDailyTotal.add(amount);
+
+        if (newTotal.compareTo(maxDailyAmount) > 0) {
+            log.warn("Daily limit would be exceeded");
+
+            throw new PaymentException(String.format("Daily payment limit exceeded, Maximun allowed:", maxDailyAmount, null));
+        }
+    }
+
+
 }
 
 

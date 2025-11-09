@@ -9,7 +9,11 @@ import java.util.Map;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.netflix.discovery.converters.Converters.MetadataConverter;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,6 +26,7 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,6 +34,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @AllArgsConstructor
+@Builder
 @NoArgsConstructor
 @Table(name = "payments")
 public class Payment {
@@ -136,10 +142,32 @@ private String cardToken;
 
 private String providerName;
 
-private String providerTransactionId;
-
 private String providerPaymentUrl;
 
+@Column(name = "idempotency_key", unique = true, length = 64)
+private String idempotencyKey;
+
+@Column(name = "client_ip", length = 45)
+private String clientIp;
+
+@Column(name = "user_agent", length = 255)
+private String userAgent;
+
+@Column(name = "processing_started_at")
+private LocalDateTime processingStatedAt;
+
+@Column(name = "expires_pending_payment_at")
+private LocalDateTime expiresPendingPaymentAt;
+
+@Column(name = "processingAttempts")
+@Builder.Default
+private Integer processingAttempts = 0;
+
+@Column(name = "provider_transaction_id", length = 100)
+private String providerTransactionId;
+
+@Column(name = "metadata", columnDefinition = "TEXT")
+@Convert(converter = MetadataConverter.class)
 private Map<String, String> metadata = new HashMap<>();
 
 
@@ -168,6 +196,10 @@ private Map<String, String> metadata = new HashMap<>();
     public void markAsRefunded() {
         this.paymentStatus = PaymentStatus.REFUNDED;
         this.refundDate = LocalDate.now();
+    }
+
+     public void incrementProcessingAttempts() {
+        this.processingAttempts = (this.processingAttempts == null ? 0 : this.processingAttempts) + 1;
     }
 
 

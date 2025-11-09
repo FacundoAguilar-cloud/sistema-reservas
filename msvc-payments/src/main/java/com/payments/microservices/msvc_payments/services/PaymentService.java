@@ -22,7 +22,8 @@ import com.payments.microservices.msvc_payments.request.PaymentCreateRequest;
 import com.payments.microservices.msvc_payments.request.PaymentInfoUpdateRequest;
 import com.payments.microservices.msvc_payments.request.PaymentStatusUpdateRequest;
 import com.payments.microservices.msvc_payments.response.PaymentResponse;
-
+import com.payments.microservices.msvc_payments.security.services.IdempotencyService;
+import com.payments.microservices.msvc_payments.security.validators.PaymentAmountValidator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,8 @@ private final PaymentValidationService paymentValidationService;
 private final ExternalServiceValidation externalServiceValidation;
 private final PaymentProcessingService paymentProcessingService;
 private final PaymentAuthorizationService paymentAuthorizationService;
+private final IdempotencyService idempotencyService;
+private final PaymentAmountValidator paymentAmountValidator;
 
 //LO QUE VA EN EL SERVICIO PRINCIPAL
 @Override
@@ -95,15 +98,17 @@ public PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paym
 }
 @Override
 @Transactional
-public void deletePayment(Long paymentId) {
+public void deletePayment(Long paymentId, Long userId) {
     Payment payment = paymentRepository.findById(paymentId)
     .orElseThrow(() -> new PaymentException("Payment not found, try again."));
     //validamos permisos del usuario para borrar y si realmente ese pago puede ser eliminado
-    validateUserPermissions(payment, paymentId);
+   validateUserOwnership(paymentId, userId);
 
     paymentValidationService.validatePaymentDelete(payment);
 
     paymentRepository.delete(payment);
+
+    log.info("Payment deleted", paymentId, userId);
 }
 @Override
 @Transactional
@@ -218,7 +223,7 @@ public PaymentResponse confirmPaymentForWebhook(String paymentId, String transac
     return paymentMapper.toResponseDto(payment);
 }
 @Override
-public boolean canAppointmentBePaid(Long appointmentId) { //falta esto
+public boolean canAppointmentBePaid(Long appointmentId) { 
     boolean paymentExists = paymentRepository.existsByAppointmentId(appointmentId);
 
     if (paymentExists) {
@@ -256,28 +261,18 @@ public boolean canAppointmentBePaid(Long appointmentId) { //falta esto
     }
 }
 @Override
-public boolean paymentExistsForAppointment(Long appointmentId) { //falta esto
-    // TODO Auto-generated method stub 
+public boolean paymentExistsForAppointment(Long appointmentId) { //VER ESTO!!
     throw new UnsupportedOperationException("Unimplemented method 'paymentExistsForAppointment'");
 }
-//validaciones para logica de negocio
 
 
-//Validaciones para updates/deletes y demás
 
   public void validateUserPermissions(Payment payment,Long userId){
     if (payment.getUserId().equals(userId)) {
         return;
     }
-//verificar donde se realizó el pago (en que tienda basicamete) //REVISAR
-  Map <String, Object> shopData = shopClient.  getShopById(payment.getShopId());
-    if (shopData != null) {
-        Long ownerId = (Long) shopData.get("ownerId");
-        if (ownerId != null && ownerId.equals(userId)) {
-            return;
-        }
-    return;
-   }  
+
+  
 
   //verificar si el barbero asociado  al pago es de la cita en concreto
 Map<String, Object> appointmentData = (Map<String, Object>) appointmentClient.getAppointmentById(payment.getAppointmentId());
@@ -288,6 +283,36 @@ Map<String, Object> appointmentData = (Map<String, Object>) appointmentClient.ge
     }
    }
    throw new PaymentException("You dont have permissions to access this payment.");
+  }
+
+  @Override
+  public PaymentResponse getPaymentByIdempotencyKey(String idempotencyKey) {
+   Payment payment = idempotencyService.findByIdIdempotencyKey(idempotencyKey).orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
+   return paymentMapper.toResponseDto(payment);
+  }
+
+  public void validateUserOwnership(Long paymentId, Long userId){
+    Payment payment = paymentRepository.findById(paymentId)
+    .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
+    paymentAuthorizationService.validateUserPermissions(payment, userId);
+  }
+
+  public void validateShopOwnership(Long shopId, Long userId){
+    Map <String, Object> shopData = shopClient.getShopById(shopId);
+    if (shopData != null) {
+        Long ownerId = (Long) shopData.get("ownerId");
+        if (!ownerId.equals(userId)) {
+           throw new SecurityException("User is not the shop owner.");
+        }
+   }  
+  }
+
+  public void validateUserAppointmentOwnership(Long appointmentId, Long userId){
+    AppointmentDto appointment = appointmentClient.getAppointmentById(appointmentId);
+
+    if (appointment != null && !appointment.getClientId().equals(userId)) {
+        throw new SecurityException("User is not the appointment owner.");
+    }
   }
 
 } 

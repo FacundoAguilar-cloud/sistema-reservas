@@ -14,7 +14,7 @@ PaymentResponse getPaymentById(Long paymentId);
 
 PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paymentId, Long userId);
 
-void deletePayment(Long paymentId); //SOFT DELETE, ver despues
+void deletePayment(Long paymentId, Long userId); 
 
 List <PaymentResponse> getPaymentsByUserId(Long userId);
 
@@ -32,6 +32,7 @@ boolean canAppointmentBePaid(Long appointmentId); //Verifica si la cita puede se
 
 boolean paymentExistsForAppointment(Long appointmentId); 
 
+PaymentResponse getPaymentByIdempotencyKey(String idempotencyKey);
 
 
 }
