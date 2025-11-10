@@ -1,12 +1,14 @@
 package com.payments.microservices.msvc_payments.repositories;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.payments.microservices.msvc_payments.entities.Payment;
@@ -45,8 +47,15 @@ boolean existsByAppointmentId(Long appointmentId);
 
 Optional<Payment> findByIdempotencyKey(String idempotencyKey);
 
+ @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p " +
+           "WHERE p.userId = :userId " +
+           "AND p.paymentStatus = 'COMPLETED' " +
+           "AND DATE(p.createdAt) = CURRENT_DATE")
+    BigDecimal getTodaysTotalByUserId(@Param("userId") Long userId);
+}
+
 
 //por ahora voy a dejar estos metodos dentro del repositorio pero a partir de que siga el desarrollo se puede ir agregando más según necesitemos
 
 
-}
+

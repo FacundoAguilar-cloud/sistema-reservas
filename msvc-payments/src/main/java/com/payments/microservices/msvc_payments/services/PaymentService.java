@@ -1,10 +1,14 @@
 package com.payments.microservices.msvc_payments.services;
 
 
+import java.lang.foreign.Linker.Option;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.payments.microservices.msvc_payments.client.AppointmentClient;
@@ -46,7 +50,16 @@ private final PaymentAmountValidator paymentAmountValidator;
 
 //LO QUE VA EN EL SERVICIO PRINCIPAL
 @Override
-public PaymentResponse createPayment(PaymentCreateRequest request) {
+public PaymentResponse createPayment(PaymentCreateRequest request, String idempotencyKey, String clientIp, String userAgent) {
+    
+    Optional <Payment> existingPayment = idempotencyService.findByIdIdempotencyKey(idempotencyKey);
+
+    if (existingPayment.isPresent()) {
+        log.info("Returning existing payment for idempotency key.", idempotencyKey);
+
+        return paymentMapper.toResponseDto(existingPayment.get());
+    }
+    
     log.info("Creating payment for appointment: {}", request.getAppointmentId());
         
         // usamos servicio de validacion externa
@@ -54,9 +67,22 @@ public PaymentResponse createPayment(PaymentCreateRequest request) {
         
         // validamos logica de negocio
         paymentValidationService.validatePaymentCreation(request, validationContext.getAppointment());
+
+        paymentAmountValidator.validateAmount(request.getAmount());
+        paymentAmountValidator.validateAmountMatchesAppointment(request.getAmount(), validationContext.getAppointment().getServicePrice());
+
+        BigDecimal todaysTotal = paymentRepository.getTodaysTotalByUserId(request.getUserId());
+        paymentAmountValidator.validateDayLimit(request.getAmount(), todaysTotal);
+
         
         // creamos y guardamos pago
         Payment payment = paymentMapper.toEntity(request, validationContext.getAppointment());
+        payment.setIdempotencyKey(idempotencyKey);
+        payment.setClientIp(clientIp);
+        payment.setUserAgent(userAgent);
+        payment.setExpiresAt(LocalDateTime.now().plusHours(24));
+        payment.setProcessingAttempts(0);
+
         Payment savedPayment = paymentRepository.save(payment);
         
         log.info("Payment created successfully with ID: {}", savedPayment.getId());
@@ -102,11 +128,11 @@ public void deletePayment(Long paymentId, Long userId) {
     Payment payment = paymentRepository.findById(paymentId)
     .orElseThrow(() -> new PaymentException("Payment not found, try again."));
     //validamos permisos del usuario para borrar y si realmente ese pago puede ser eliminado
-   validateUserOwnership(paymentId, userId);
+  paymentAuthorizationService.validateUserPermissions(payment, userId);
 
-    paymentValidationService.validatePaymentDelete(payment);
+  paymentValidationService.validatePaymentDelete(payment);
 
-    paymentRepository.delete(payment);
+  paymentRepository.delete(payment);
 
     log.info("Payment deleted", paymentId, userId);
 }

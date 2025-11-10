@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
@@ -14,8 +17,11 @@ import com.payments.microservices.msvc_payments.request.PaymentCreateRequest;
 import com.payments.microservices.msvc_payments.request.RefundRequest;
 import com.payments.microservices.msvc_payments.response.CanPayResponse;
 import com.payments.microservices.msvc_payments.response.PaymentResponse;
+import com.payments.microservices.msvc_payments.security.services.IdempotencyService;
 import com.payments.microservices.msvc_payments.services.PaymentService;
 import com.payments.microservices.msvc_payments.services.RefundService;
+
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,17 +44,42 @@ public class CreditCardPaymentController {
 
 private final PaymentService paymentService;
 private final RefundService refundService;
+private final IdempotencyService idempotencyService;
 
-public ResponseEntity <PaymentResponse> createCreditCardPayment(@Valid @RequestBody com.payments.microservices.msvc_payments.request.PaymentCreateRequest request){
+@PostMapping("/generate")
+@PreAuthorize("hasRole('USER')")
+public ResponseEntity <PaymentResponse> createCreditCardPayment(
+    @Valid @RequestBody com.payments.microservices.msvc_payments.request.PaymentCreateRequest request, @RequestHeader("X-Idempotency-Key") String idempotencyKey,
+    Authentication authentication,
+    HttpServletRequest httpRequest){
+    Long authenticatedUserId = Long.parseLong(authentication.getName());
+    
     log.info("Creating credit card payment for appointment", +  request.getAppointmentId(), request.getUserId());
+
+    if (request.getUserId().equals(authenticatedUserId)) {
+            log.warn("User ID mismatch", authenticatedUserId, request.getUserId());
+
+            throw new SecurityException("User ID mismatch");
+        }
 
     if (request.getPaymentMethod() != PaymentMethod.CREDIT_CARD) {
         throw new IllegalArgumentException("This endpoint only supports payment with credit card.");
     }
 
-    validateCreditCardFields(request); //este metodo lo tenemos que crear, dejo esto a modo de recordatorio.
+    idempotencyService.validateIdempotencyKey(idempotencyKey);
 
-    PaymentResponse response = paymentService.createPayment(request);
+    if (idempotencyService.isDuplicateRequest(idempotencyKey)) {
+        PaymentResponse existingPayment = paymentService.getPaymentByIdempotencyKey(idempotencyKey);
+        log.info("Returning existing payment for idempotency key.");
+        return ResponseEntity.ok(existingPayment);
+    }
+
+     String clientIp = getClientIp(httpRequest);
+     String userAgent = httpRequest.getHeader("User-Agent");
+
+    validateCreditCardFields(request); 
+
+    PaymentResponse response = paymentService.createPayment(request, idempotencyKey, clientIp, userAgent);
 
     log.info("Credit card payment created successfully", response.getId(), response.getTransactionId());
 
@@ -174,6 +205,21 @@ private void validateCreditCardFields(PaymentCreateRequest request){
         throw new IllegalArgumentException("Document number is required for credit card payments.");
     }
 }
+
+private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty()) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.isEmpty()) {
+            ip = request.getRemoteAddr();
+        }
+        // Si viene con múltiples IPs, tomar la primera
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip;
+    }
 
 
 

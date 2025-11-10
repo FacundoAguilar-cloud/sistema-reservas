@@ -8,7 +8,7 @@ import com.payments.microservices.msvc_payments.response.PaymentResponse;
 
 public interface PaymentServiceIMPL {
 
-PaymentResponse createPayment(PaymentCreateRequest request);
+PaymentResponse createPayment(PaymentCreateRequest request, String idempotencyKey, String clientIp, String userAgent);
 
 PaymentResponse getPaymentById(Long paymentId);
 

@@ -72,7 +72,7 @@ public ResponseEntity <PaymentResponse> createBankTransferPayment(
  log.info("Bank transfer payment created successfully.");
 
  String clientIp = getClientIp(httpRequest);
-String userAgent = httpRequest.getHeader("User-Agent");
+ String userAgent = httpRequest.getHeader("User-Agent");
 
  PaymentResponse response = paymentService.createPayment(request, idempotencyKey, clientIp, userAgent);
  
@@ -168,7 +168,7 @@ public ResponseEntity <PaymentResponse> cancelBankTransferPayment(@PathVariable 
         throw new IllegalArgumentException("Only pending payments can be cancelled");
     }
 
-    paymentService.deletePayment(paymentId); //aca tambien deberiamos poner el usuario dado que no cualquier usuario deberia de poder cancelar esto. VER EL SERVICIO
+    paymentService.deletePayment(paymentId, userId); //aca tambien deberiamos poner el usuario dado que no cualquier usuario deberia de poder cancelar esto. VER EL SERVICIO
 
     log.info("Bank transfer payment cancelled successfully", paymentId);
 
