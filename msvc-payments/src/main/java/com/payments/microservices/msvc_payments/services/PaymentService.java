@@ -286,12 +286,6 @@ public boolean canAppointmentBePaid(Long appointmentId) {
         return false;
     }
 }
-@Override
-public boolean paymentExistsForAppointment(Long appointmentId) { //VER ESTO!!
-    throw new UnsupportedOperationException("Unimplemented method 'paymentExistsForAppointment'");
-}
-
-
 
   public void validateUserPermissions(Payment payment,Long userId){
     if (payment.getUserId().equals(userId)) {

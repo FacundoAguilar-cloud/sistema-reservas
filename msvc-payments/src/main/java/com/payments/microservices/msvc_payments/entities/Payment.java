@@ -167,7 +167,7 @@ private Integer processingAttempts = 0;
 private String providerTransactionId;
 
 @Column(name = "metadata", columnDefinition = "TEXT")
-@Convert(converter = MetadataConverter.class)
+@Convert(converter = PaymentMetadaConverter.class)
 private Map<String, String> metadata = new HashMap<>();
 
 

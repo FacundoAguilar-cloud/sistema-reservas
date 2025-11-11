@@ -65,13 +65,33 @@ public ResponseEntity<String> handleWebhook(
 
                         if (requestId != null) {
                             processedWebhooks.put(paymentId, System.currentTimeMillis());
-                            cleanUpOldWebhooks();
+                            cleanupOldWebhooks();
                         }
+                        log.info("Payment confirmed successfully via webhook", paymentId);
+                        
+                    } else{
+                        log.warn("Webhook received but not payment ID found.");
                     }
+                    
+                } else{
+                    log.warn("Webhook type ignored (not a payment.)", type);
                 }
+                return ResponseEntity.ok("OK");
             } catch (Exception e) {
-                // TODO: handle exception
+                log.error("Error processing MercadoPago webhook.", e);
+
+                return ResponseEntity.ok("ERROR_PROCESSED");
             }
+
+
+             
+    }
+
+
+     private void cleanupOldWebhooks() {
+        long oneHourAgo = System.currentTimeMillis() - (60 * 60 * 1000);
+        processedWebhooks.entrySet()
+            .removeIf(entry -> entry.getValue() < oneHourAgo);
     }
 
 }

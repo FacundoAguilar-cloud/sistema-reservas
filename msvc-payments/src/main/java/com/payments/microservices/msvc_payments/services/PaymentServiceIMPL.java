@@ -30,8 +30,6 @@ PaymentResponse confirmPayment(Long paymentId ,String transactionId);
 
 boolean canAppointmentBePaid(Long appointmentId); //Verifica si la cita puede ser pagada
 
-boolean paymentExistsForAppointment(Long appointmentId); 
-
 PaymentResponse getPaymentByIdempotencyKey(String idempotencyKey);
 
 
