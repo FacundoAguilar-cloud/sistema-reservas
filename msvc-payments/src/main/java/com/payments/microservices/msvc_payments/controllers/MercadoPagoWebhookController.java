@@ -8,10 +8,13 @@ import com.payments.microservices.msvc_payments.security.validators.WebhookSigna
 import com.payments.microservices.msvc_payments.services.PaymentService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.cloud.client.loadbalancer.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +30,7 @@ public class MercadoPagoWebhookController {
 private final PaymentService paymentService;
 private final WebhookSignatureValidator signatureValidator;
 
-private final ConcurrentHashMap <String, Long> processedWebhooks = new ConcurrentHashMap<>();
+private final ConcurrentHashMap <String, WebhookProcessingRecord> processedWebhooks = new ConcurrentHashMap<>();
 
 //esto nos va a servir para poder recibir las notif de pago, el pago se va a confirmar cuando MP detecte la transferencia (IMPORTANTE).
 
@@ -44,44 +47,51 @@ public ResponseEntity<String> handleWebhook(
             try {
                 log.info("Webhook received.", type, id);
 
-                if (signature == null || !signatureValidator.isValidSignature(payload, signature)) {
-                    log.error("Invalid webhook signature - REJECTED.");
+                if (signature == null || signature.trim().isEmpty()) {
+                    log.error("Missing signature header - Webhook REJECTED.");
 
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("WEBHOOK_REJECTED");
+                }
+
+                if (!signatureValidator.isValidSignature(payload, signature)) {
+                    log.error("Webhook rejected, invalid signature.");
+                    log.debug(payload);
+                    log.debug("Signature received", signature);
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("INVALID_SIGNATURE");
                 }
+                log.info("Webhook signature validated successfully.");
 
-                if (requestId !=null && processedWebhooks.containsKey(requestId)) {
-                    log.info("Webhook already processed", requestId);
-                    return ResponseEntity.ok("ALREADY_PROCESSED");
-                }
+                if (requestId != null && !requestId.trim().isEmpty()) {
+                   WebhookProcessingRecord existingRecord = processedWebhooks.get(requestId);
 
-                if ("payments".equals(type)) {
-                    String paymentId = id != null ? id : dataId;
+                   long timeSinceProcessed = System.currentTimeMillis() - existingRecord.getTimestamp();
+                   log.info("Webhook already processed", requestId, timeSinceProcessed);
 
-                    if (paymentId != null) {
-                        log.info("Processing payment webhook.");
-
-                        paymentService.confirmPaymentForWebhook(paymentId, paymentId); //REVISAR ESTO
-
-                        if (requestId != null) {
-                            processedWebhooks.put(paymentId, System.currentTimeMillis());
-                            cleanupOldWebhooks();
-                        }
-                        log.info("Payment confirmed successfully via webhook", paymentId);
-                        
-                    } else{
-                        log.warn("Webhook received but not payment ID found.");
-                    }
+                   return ResponseEntity.ok("success");
                     
-                } else{
-                    log.warn("Webhook type ignored (not a payment.)", type);
-                }
-                return ResponseEntity.ok("OK");
-            } catch (Exception e) {
-                log.error("Error processing MercadoPago webhook.", e);
+                    //validacion del tipo de notificacion
+                    if (!"payment".equals(type)) {
+                        log.info("Webhook type ignored (not a payment notification)", type);
 
-                return ResponseEntity.ok("ERROR_PROCESSED");
-            }
+                        return ResponseEntity.ok("Notification type ignored");
+                        }
+
+                        String paymentId = id != null ? id : dataId;
+
+                        if (paymentId == null || paymentId.trim().isEmpty()) {
+                            log.warn("Webhook recieved but no paymentId found in parameters");
+
+                            return ResponseEntity.badRequest().body("Missing payment ID");
+                        }
+
+                        log.info("Processing payment webhook", paymentId);
+                        try {
+                            paymentService.confirmPaymentForWebhook(paymentId, paymentId);
+                        } catch (Exception e) {
+                            // TODO: handle exception
+                        }
+
+                        
 
 
              
@@ -94,7 +104,18 @@ public ResponseEntity<String> handleWebhook(
             .removeIf(entry -> entry.getValue() < oneHourAgo);
     }
 
+
+     @lombok.Data
+     @lombok.AllArgsConstructor   
+     private static class WebhookProcessingRecord {
+        private String requestId;
+        private String paymentId;
+        private long timestamp;
+    }
+
 }
+
+
 
 
 

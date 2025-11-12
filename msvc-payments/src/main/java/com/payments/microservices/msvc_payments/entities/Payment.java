@@ -178,10 +178,6 @@ private Map<String, String> metadata = new HashMap<>();
         return metadata;
     }
 
-
-
-
-
  public void markAsPaid(String transactionId) {
         this.paymentStatus = PaymentStatus.COMPLETED;
         this.transactionId = transactionId;
