@@ -20,13 +20,11 @@ import com.payments.microservices.msvc_payments.entities.PaymentStatus;
 public interface PaymentRepository extends CrudRepository<Payment, Long> {
 List <Payment> findPaymentByUserId(Long userId);
 
-Optional <Payment> findByPaymentId(String paymentId);
-
 List <Payment>  findPaymentByAppointmentId(Long appointmentId);
 
 List <Payment> findPaymentByShopId (Long shopId);
 
-Optional <Payment> findByTransactionId(Long transactionId);
+Optional <Payment> findByTransactionId(String transactionId);
 
 List <Payment> findByUserIdAndPaymentStatus(Long userId, PaymentStatus paymentStatus);
 
@@ -34,7 +32,7 @@ List <Payment> findByUserIdAndPaymentMethod(Long userId, PaymentMethod paymentMe
 
 List <Payment> findByPaymentStatus (PaymentStatus paymentStatus);
 
-List <Payment> findPaymentsBetweenDates(LocalDate starDate, LocalDate endDate);
+List <Payment> findPaymentsBetweenDates(LocalDate starDate, LocalDate endDate); //el problema es por esto
 
 @Query("SELECT p FROM Payment p WHERE p.paymentStatus = 'COMPLETED' AND " +
 "(p.refundAmount IS NULL OR p.refundAmount < p.amount)")

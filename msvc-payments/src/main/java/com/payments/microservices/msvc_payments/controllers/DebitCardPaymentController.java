@@ -80,22 +80,22 @@ public ResponseEntity <PaymentResponse> createDebitCardPayment(
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
 }
 
-@PostMapping("/process/{paymentId}")
-public ResponseEntity <PaymentResponse> processDebitCardPayment(@PathVariable Long paymentId) {
+@PostMapping("/process/{id}")
+public ResponseEntity <PaymentResponse> processDebitCardPayment(@PathVariable Long id) {
     log.info("Processing debit card payment.");
 
-    PaymentResponse response = paymentService.processPayment(paymentId);
+    PaymentResponse response = paymentService.processPayment(id);
 
     log.info("Debit card payment processed.", response.getPaymentStatus());
 
     return ResponseEntity.ok(response);
 }
 
-@GetMapping("/{paymentId}")
-public ResponseEntity <PaymentResponse> getDebitCardPayment(@PathVariable Long paymentId) {
+@GetMapping("/{id}")
+public ResponseEntity <PaymentResponse> getDebitCardPayment(@PathVariable Long id) {
     log.info("Getting debit card payment details.");
     
-    PaymentResponse response = paymentService.getPaymentById(paymentId);
+    PaymentResponse response = paymentService.getPaymentById(id);
 
     if (response.getPaymentMethod() != PaymentMethod.DEBIT_CARD) {
         throw new IllegalArgumentException("Payment is not a debit card payment");
@@ -131,14 +131,14 @@ public ResponseEntity <List<PaymentResponse>> getShopDebitCardPayments(@PathVari
     return ResponseEntity.ok(debitCardPayments);
 }
 
-@GetMapping("/status/{paymentId}")
-public ResponseEntity <PaymentStatusResponse> checkDebitCardStatus(@PathVariable Long paymentId) {
-    log.info("Checking debit card payment status", paymentId);
+@GetMapping("/status/{id}")
+public ResponseEntity <PaymentStatusResponse> checkDebitCardStatus(@PathVariable Long id) {
+    log.info("Checking debit card payment status", id);
 
-    PaymentResponse response = paymentService.getPaymentById(paymentId);
+    PaymentResponse response = paymentService.getPaymentById(id);
 
     PaymentStatusResponse statusResponse = PaymentStatusResponse.builder()
-    .paymentId (String.valueOf(response.getId()))
+    .id (String.valueOf(response.getId()))
     .status(response.getPaymentStatus())
     .amount(response.getAmount())
     .createdAt(response.getCreatedAt())
@@ -149,11 +149,11 @@ public ResponseEntity <PaymentStatusResponse> checkDebitCardStatus(@PathVariable
     return ResponseEntity.ok(statusResponse);
 }
 
-@PostMapping("/refund/{paymentId}")
-public ResponseEntity <PaymentResponse> refundDebitCardPayment(@PathVariable Long paymentId, @RequestBody RefundRequest request) {
-    log.info("Requesting refund for debit card payment.", paymentId);
+@PostMapping("/refund/{id}")
+public ResponseEntity <PaymentResponse> refundDebitCardPayment(@PathVariable Long id, @RequestBody RefundRequest request) {
+    log.info("Requesting refund for debit card payment.", id);
 
-  PaymentResponse response = refundService.processFullRefund(paymentId, request.getUserId(), request.getReason());
+  PaymentResponse response = refundService.processFullRefund(id, request.getUserId(), request.getReason());
 
   return ResponseEntity.ok(response);
 }

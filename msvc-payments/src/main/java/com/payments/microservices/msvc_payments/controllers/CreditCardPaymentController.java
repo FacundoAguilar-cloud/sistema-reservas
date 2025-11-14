@@ -87,22 +87,22 @@ public ResponseEntity <PaymentResponse> createCreditCardPayment(
 }
 
 
-@PostMapping("/process/{paymentId}")
-public ResponseEntity <PaymentResponse> processCreditCardPayment(@PathVariable Long paymentId) {
+@PostMapping("/process/{id}")
+public ResponseEntity <PaymentResponse> processCreditCardPayment(@PathVariable Long id) {
     log.info("Processing credit card payment.");
 
-    PaymentResponse response = paymentService.processPayment(paymentId);
+    PaymentResponse response = paymentService.processPayment(id);
 
     log.info("Credit card payment processed.", response.getPaymentStatus());
 
     return ResponseEntity.ok(response);
 }
 
-@GetMapping("/{paymentId}")
-public ResponseEntity <PaymentResponse> getCreditCardPayment(@PathVariable Long paymentId) {
+@GetMapping("/{id}")
+public ResponseEntity <PaymentResponse> getCreditCardPayment(@PathVariable Long id) {
     log.info("Getting credit card payment details.");
     
-    PaymentResponse response = paymentService.getPaymentById(paymentId);
+    PaymentResponse response = paymentService.getPaymentById(id);
 
     if (response.getPaymentMethod() != PaymentMethod.CREDIT_CARD) {
         throw new IllegalArgumentException("Payment is not a credit card payment");
@@ -140,14 +140,14 @@ public ResponseEntity <List<PaymentResponse>> getShopCreditCardPayments(@PathVar
 
 
 
-@GetMapping("/status/{paymentId}")
-public ResponseEntity <PaymentStatusResponse> checkCreditCardStatus(@PathVariable Long paymentId) {
-    log.info("Checking credit card payment status", paymentId);
+@GetMapping("/status/{id}")
+public ResponseEntity <PaymentStatusResponse> checkCreditCardStatus(@PathVariable Long id) {
+    log.info("Checking credit card payment status", id);
 
-    PaymentResponse response = paymentService.getPaymentById(paymentId);
+    PaymentResponse response = paymentService.getPaymentById(id);
 
     PaymentStatusResponse statusResponse = PaymentStatusResponse.builder()
-    .paymentId (String.valueOf(response.getId()))
+    .id (String.valueOf(response.getId()))
     .status(response.getPaymentStatus())
     .amount(response.getAmount())
     .createdAt(response.getCreatedAt())
@@ -158,11 +158,11 @@ public ResponseEntity <PaymentStatusResponse> checkCreditCardStatus(@PathVariabl
     return ResponseEntity.ok(statusResponse);
 }
 
-@PostMapping("/refund/{paymentId}")
-public ResponseEntity <PaymentResponse> refundCreditCardPayment(@PathVariable Long paymentId, @RequestBody RefundRequest request) {
-   log.info("Requesting refund for debit card payment.", paymentId);
+@PostMapping("/refund/{id}")
+public ResponseEntity <PaymentResponse> refundCreditCardPayment(@PathVariable Long id, @RequestBody RefundRequest request) {
+   log.info("Requesting refund for debit card payment.", id);
 
-  PaymentResponse response = refundService.processFullRefund(paymentId, request.getUserId(), request.getReason());
+  PaymentResponse response = refundService.processFullRefund(id, request.getUserId(), request.getReason());
 
   return ResponseEntity.ok(response);
 

@@ -1,7 +1,7 @@
 package com.payments.microservices.msvc_payments.services;
 
 
-import java.lang.foreign.Linker.Option;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -90,15 +90,15 @@ public PaymentResponse createPayment(PaymentCreateRequest request, String idempo
 }
 
 @Override
-public PaymentResponse getPaymentById(Long paymentId) {
-  Payment payment = paymentRepository.findById(paymentId)
+public PaymentResponse getPaymentById(Long id) {
+  Payment payment = paymentRepository.findById(id)
   .orElseThrow(() -> new ResourceNotFoundException("Payment not found."));
   return paymentMapper.toResponseDto(payment);
 }
 @Override
 @Transactional
-public PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paymentId, Long userId) {
-    Payment payment = paymentRepository.findById(paymentId)
+public PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long id, Long userId) {
+    Payment payment = paymentRepository.findById(id)
     .orElseThrow(() -> new ResourceNotFoundException("Payment not found."));
     //deberiamos de tener un metodo que se ocupe de verificar los permisos del usuario para poder hacer cambios (admin o owner), deberia hacerlo el security mas adelante
     validateUserPermissions(payment, userId);
@@ -124,8 +124,8 @@ public PaymentResponse updatePayment(PaymentInfoUpdateRequest request, Long paym
 }
 @Override
 @Transactional
-public void deletePayment(Long paymentId, Long userId) {
-    Payment payment = paymentRepository.findById(paymentId)
+public void deletePayment(Long id, Long userId) {
+    Payment payment = paymentRepository.findById(id)
     .orElseThrow(() -> new PaymentException("Payment not found, try again."));
     //validamos permisos del usuario para borrar y si realmente ese pago puede ser eliminado
   paymentAuthorizationService.validateUserPermissions(payment, userId);
@@ -134,12 +134,12 @@ public void deletePayment(Long paymentId, Long userId) {
 
   paymentRepository.delete(payment);
 
-    log.info("Payment deleted", paymentId, userId);
+    log.info("Payment deleted", id, userId);
 }
 @Override
 @Transactional
-public PaymentResponse processPayment(Long paymentId){
-Payment payment = paymentRepository.findById(paymentId)
+public PaymentResponse processPayment(Long id){
+Payment payment = paymentRepository.findById(id)
 .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
 
 return paymentProcessingService.processPayment(payment);
@@ -157,14 +157,14 @@ public List<PaymentResponse> getPaymentsByShopId(Long shopId) {
     return paymentMapper.toResponseDtoList(payments);
 }
 @Override
-public List<PaymentResponse> getPaymentsByAppointmentId(Long paymentId) {
-   List <Payment> payments = paymentRepository.findPaymentByAppointmentId(paymentId);
+public List<PaymentResponse> getPaymentsByAppointmentId(Long id) {
+   List <Payment> payments = paymentRepository.findPaymentByAppointmentId(id);
    return paymentMapper.toResponseDtoList(payments);
 }
 
 @Override
-public PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, Long paymentId, Long userId) {
-    Payment payment = paymentRepository.findById(paymentId)
+public PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, Long id, Long userId) {
+    Payment payment = paymentRepository.findById(id)
     .orElseThrow(()->  new ResourceNotFoundException("Payment not found, please try again."));
     //validamos usuario
     validateUserPermissions(payment, userId);
@@ -217,11 +217,11 @@ public PaymentResponse updatePaymentStatus(PaymentStatusUpdateRequest request, L
 
 
 
-public PaymentResponse confirmPayment(Long paymentId, String transactionId) {
-    Payment payment = paymentRepository.findById(paymentId)
+public PaymentResponse confirmPayment(Long id, String transactionId) {
+    Payment payment = paymentRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Payment not found."));
    if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
-     log.warn("Attempt to confirm payment that is not pending. PaymentId: {}", paymentId);
+     log.warn("Attempt to confirm payment that is not pending. PaymentId: {}", id);
      return paymentMapper.toResponseDto(payment);
    }
 
@@ -233,19 +233,19 @@ public PaymentResponse confirmPayment(Long paymentId, String transactionId) {
    return paymentMapper.toResponseDto(payment);
 }
 
-public PaymentResponse confirmPaymentForWebhook(String paymentId, String transactionId) {
-    Payment payment = paymentRepository.findByPaymentId(paymentId)
+public PaymentResponse confirmPaymentForWebhook(Long id, String transactionId) {
+    Payment payment = paymentRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Payment not found."));
     
     if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
-        log.warn("Attempt to confirm non-pending payment: {}", paymentId);
+        log.warn("Attempt to confirm non-pending payment: {}", id);
         return paymentMapper.toResponseDto(payment);
     }
 
-    payment.markAsPaid(transactionId);
+    payment.markAsPaid(transactionId.toString());
     paymentRepository.save(payment);
 
-    log.info("Payment {} confirmed via webhook", paymentId);
+    log.info("Payment {} confirmed via webhook", id);
     return paymentMapper.toResponseDto(payment);
 }
 @Override
@@ -311,8 +311,8 @@ Map<String, Object> appointmentData = (Map<String, Object>) appointmentClient.ge
    return paymentMapper.toResponseDto(payment);
   }
 
-  public void validateUserOwnership(Long paymentId, Long userId){
-    Payment payment = paymentRepository.findById(paymentId)
+  public void validateUserOwnership(Long id, Long userId){
+    Payment payment = paymentRepository.findById(id)
     .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
     paymentAuthorizationService.validateUserPermissions(payment, userId);
   }

@@ -82,22 +82,22 @@ public ResponseEntity <PaymentResponse> createBankTransferPayment(
 }
 
 
-@PostMapping("/{paymentId}/process")
-public ResponseEntity <PaymentResponse> processBankTransferPayment(@PathVariable Long paymentId) {
-   log.info("Processing bank transfer payment.", paymentId);
+@PostMapping("/{id}/process")
+public ResponseEntity <PaymentResponse> processBankTransferPayment(@PathVariable Long id) {
+   log.info("Processing bank transfer payment.", id);
 
-   PaymentResponse response = paymentService.processPayment(paymentId);
+   PaymentResponse response = paymentService.processPayment(id);
 
    log.info("Bank transfer payment processed", response.getPaymentStatus(), response.getPaymentUrl());
     
     return ResponseEntity.ok(response);
 }
 
-@GetMapping("/{paymentId}")
-public ResponseEntity <PaymentResponse>  getBankTransferPayment(@PathVariable Long paymentId) {
-    log.info("Getting bank transfer payment", paymentId);
+@GetMapping("/{id}")
+public ResponseEntity <PaymentResponse>  getBankTransferPayment(@PathVariable Long id) {
+    log.info("Getting bank transfer payment", id);
 
-    PaymentResponse response = paymentService.getPaymentById(paymentId);
+    PaymentResponse response = paymentService.getPaymentById(id);
 
     if (response.getPaymentMethod() != PaymentMethod.BANK_TRANSFER) {
         throw new IllegalArgumentException("Payment is not a bank transfer");
@@ -136,14 +136,14 @@ public ResponseEntity <List<PaymentResponse>> getShopBankTransferPayments(@PathV
 
 }
 
-@GetMapping("/status/{paymentId}")
-public ResponseEntity <PaymentStatusResponse> checkBankTransferStatus(@PathVariable Long paymentId) {
-    log.info("checking bank transfer payment status.", paymentId);
+@GetMapping("/status/{id}")
+public ResponseEntity <PaymentStatusResponse> checkBankTransferStatus(@PathVariable Long id) {
+    log.info("checking bank transfer payment status.", id);
 
-    PaymentResponse response = paymentService.getPaymentById(paymentId);
+    PaymentResponse response = paymentService.getPaymentById(id);
 
     PaymentStatusResponse statusResponse = PaymentStatusResponse.builder()
-    .paymentId(String.valueOf(response.getId()))
+    .id(String.valueOf(response.getId()))
     .status(response.getPaymentStatus())
     .amount(response.getAmount())
     .createdAt(response.getCreatedAt())
@@ -154,11 +154,11 @@ public ResponseEntity <PaymentStatusResponse> checkBankTransferStatus(@PathVaria
     return ResponseEntity.ok(statusResponse);
 }
 
-@PostMapping("/cancel/{paymentId}")
-public ResponseEntity <PaymentResponse> cancelBankTransferPayment(@PathVariable Long paymentId, @RequestParam Long userId) {
-    log.info("Cancel bank transfer payment.", paymentId, userId);
+@PostMapping("/cancel/{id}")
+public ResponseEntity <PaymentResponse> cancelBankTransferPayment(@PathVariable Long id, @RequestParam Long userId) {
+    log.info("Cancel bank transfer payment.", id, userId);
 
-    PaymentResponse response = paymentService.getPaymentById(paymentId);
+    PaymentResponse response = paymentService.getPaymentById(id);
 
     if (response.getPaymentMethod() != PaymentMethod.BANK_TRANSFER) {
         throw new IllegalArgumentException("Payment is not a bank transfer.");
@@ -168,9 +168,9 @@ public ResponseEntity <PaymentResponse> cancelBankTransferPayment(@PathVariable 
         throw new IllegalArgumentException("Only pending payments can be cancelled");
     }
 
-    paymentService.deletePayment(paymentId, userId); //aca tambien deberiamos poner el usuario dado que no cualquier usuario deberia de poder cancelar esto. VER EL SERVICIO
+    paymentService.deletePayment(id, userId); //aca tambien deberiamos poner el usuario dado que no cualquier usuario deberia de poder cancelar esto. VER EL SERVICIO
 
-    log.info("Bank transfer payment cancelled successfully", paymentId);
+    log.info("Bank transfer payment cancelled successfully", id);
 
     return ResponseEntity.noContent().build();
 }

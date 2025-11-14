@@ -35,7 +35,7 @@ public PaymentResponse processPayment(Payment payment){
 paymentValidationService.validatePaymentForProcessing(payment);
 //cambiar estatus al pago (se está procesando)
 payment.setPaymentStatus(PaymentStatus.PROCESSING);
-payment.setProcessingStartedAt(LocalDateTime.now());
+payment.setProcessingStatedAt(LocalDateTime.now());
 paymentRepository.save(payment);
 //procesar segun el método de pago elegido
 PaymentProcessingResult result = processPaymentByMethod(payment);

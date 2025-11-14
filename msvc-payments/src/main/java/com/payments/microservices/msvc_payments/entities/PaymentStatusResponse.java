@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentStatusResponse {
-private String paymentId;
+private String id;
 private PaymentStatus status;
 private BigDecimal amount;
 private LocalDateTime createdAt;
