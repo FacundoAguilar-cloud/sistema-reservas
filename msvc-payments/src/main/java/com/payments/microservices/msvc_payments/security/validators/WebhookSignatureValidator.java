@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WebhookSignatureValidator {
     // basicamente va a enviar notificaciones en tiempo real segun se requiera (por ejemplo notis por pagos aprobados/rechazados)
 
-    @Value("${MERCADOPAGO_WEBHOOK_SECRET}")
+    @Value("${mercadopago.webhook.secret:default_webhook_secret_123}")
     private String webhookSecret;
 
     public boolean isValidSignature(String payload, String signature) {

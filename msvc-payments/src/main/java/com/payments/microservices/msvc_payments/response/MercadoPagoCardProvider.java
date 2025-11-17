@@ -7,16 +7,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
-import com.mercadopago.MercadoPagoConfig;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.providers.PaymentProvider;
 import com.payments.microservices.msvc_payments.request.CardPaymentRequest;
@@ -27,18 +23,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MercadoPagoCardProvider implements PaymentProvider <CardPaymentRequest> {
 
-	@Value(value = "${MERCADOPAGO_ACCESS_TOKEN}") //el token de acceso que tambien va a estar en el app.properties
+	@Value(value = "${mercadopago.access-token}") 
     private String accessToken;
 
 	 private static final String PAYMENTS_URL = "https://api.mercadopago.com/v1/payments";
     
 
- private final MercadoPagoConfig config;
  private final RestTemplate template; 
-    
- public MercadoPagoCardProvider(MercadoPagoConfig config, RestTemplate template){
-	
-	this.config = config;
+ 
+ public MercadoPagoCardProvider(RestTemplate template){
 	this.template = template;
  }
 
@@ -54,7 +47,7 @@ public class MercadoPagoCardProvider implements PaymentProvider <CardPaymentRequ
 
 		 HttpHeaders headers = new HttpHeaders();
 		 headers.setContentType(MediaType.APPLICATION_JSON);
-		 headers.setBearerAuth(MercadoPagoConfig.getAccessToken());
+		 headers.setBearerAuth(accessToken);
 
 		 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(paymentData, headers);
 

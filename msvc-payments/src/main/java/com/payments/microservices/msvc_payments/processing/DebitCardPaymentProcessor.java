@@ -1,7 +1,8 @@
 package com.payments.microservices.msvc_payments.processing;
 
-import org.codehaus.plexus.component.annotations.Component;
 
+
+import org.springframework.stereotype.Component;
 import com.payments.microservices.msvc_payments.entities.Payment;
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
 import com.payments.microservices.msvc_payments.entities.PaymentProcessingResult;
@@ -11,7 +12,7 @@ import com.payments.microservices.msvc_payments.response.PaymentProviderResponse
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-@Component(role = DebitCardPaymentProcessor.class)
+@Component //probar la app y seguir solucionando errores
 @RequiredArgsConstructor
 @Slf4j
 public class DebitCardPaymentProcessor extends BasePaymentProcessor {

@@ -32,13 +32,16 @@ List <Payment> findByUserIdAndPaymentMethod(Long userId, PaymentMethod paymentMe
 
 List <Payment> findByPaymentStatus (PaymentStatus paymentStatus);
 
-List <Payment> findPaymentsBetweenDates(LocalDate starDate, LocalDate endDate); //el problema es por esto
+
+@Query("SELECT p FROM Payment p WHERE p.createdAt BETWEEN :startDate AND :endDate")
+List <Payment> findPaymentsBetweenDates(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
 @Query("SELECT p FROM Payment p WHERE p.paymentStatus = 'COMPLETED' AND " +
 "(p.refundAmount IS NULL OR p.refundAmount < p.amount)")
 List <Payment> findRefoundablePayments();
 
-List <Payment> findRefoundedPayments(PaymentStatus paymentStatus);
+@Query("SELECT p FROM Payment p WHERE p.paymentStatus = :paymentStatus AND p.refundAmount IS NOT NULL")
+List <Payment> findRefoundedPayments(@Param("paymentStatus") PaymentStatus paymentStatus);
 
 //verifica si existe un pago para una cita específica
 boolean existsByAppointmentId(Long appointmentId);

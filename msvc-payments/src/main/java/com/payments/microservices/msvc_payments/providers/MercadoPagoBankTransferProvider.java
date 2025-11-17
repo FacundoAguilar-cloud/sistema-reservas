@@ -27,8 +27,8 @@ import com.payments.microservices.msvc_payments.response.PaymentProviderResponse
 @Component
 public class MercadoPagoBankTransferProvider implements PaymentProvider<BankTransferPaymentRequest> {
 
-    @Value("${MERCADOPAGO_ACCESS_TOKEN}")
-    private String accesstoken;
+    @Value("${mercadopago.access-token}")
+    private String accessToken;
     @Value("${WEBHOOK_BASE_URL:http://localhost:8003}/api/webhooks/mercadopago")
     private String webhookUrl;
 
@@ -48,7 +48,7 @@ public class MercadoPagoBankTransferProvider implements PaymentProvider<BankTran
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(accesstoken);
+        headers.setBearerAuth(accessToken);
         headers.add("X-Idempotency-Key", request.getTransactionId());
 
         HttpEntity <Map<String, Object>> entity = new HttpEntity<>(paymentData, headers);
@@ -80,7 +80,7 @@ public class MercadoPagoBankTransferProvider implements PaymentProvider<BankTran
 
     @Override
     public boolean isAvailable() {
-      return accesstoken != null && !accesstoken.trim().isEmpty();
+      return accessToken != null && !accessToken.trim().isEmpty();
     }
 
     
@@ -102,7 +102,7 @@ public class MercadoPagoBankTransferProvider implements PaymentProvider<BankTran
     private Map <String, Object>  buildMercadoPagoRequest(BankTransferPaymentRequest request){
         Map <String, Object> paymentData = new HashMap<>();
 
-        paymentData.put("transaction_amoun", request.getAmount());
+        paymentData.put("transaction_amount", request.getAmount());
         paymentData.put("description", request.getDescription());
         paymentData.put("external_reference", request.getExternalReference());
         paymentData.put("payment_method_id", "pix"); //pix es para transfer instantanea dentro de ARG
@@ -112,7 +112,7 @@ public class MercadoPagoBankTransferProvider implements PaymentProvider<BankTran
 
         if (request.getPayerName() != null) {
             payer.put("first_name", request.getPayerName().split(" ")[0]);
-            if (request.getPayerName().split( "").length > 1) {
+            if (request.getPayerName().split("").length > 1) {
                 payer.put("last_name", request.getPayerName().substring(request.getPayerName().indexOf(" ") +1));
             }
         }
@@ -120,7 +120,7 @@ public class MercadoPagoBankTransferProvider implements PaymentProvider<BankTran
         Map <String, Object> identification = new HashMap<>();
         identification.put("type", request.getPayerDocumentType());
         identification.put("number", request.getPayerDocumentNumber());
-        identification.put("identification", identification);
+        payer.put("identification", identification);
 
         paymentData.put("payer", payer);
 
@@ -196,20 +196,20 @@ public class MercadoPagoBankTransferProvider implements PaymentProvider<BankTran
 
         switch (status) {
             case "pending":
-                builder.message("Bank transfer pending. Complete the transfer to confirm payment");
+                builder.message("Bank transfer pending. Complete the transfer to confirm payment.");
             case  "approved":
                 builder.message("Bank transfer completed succesfully.");   
 
             case "rejected":
-                builder.message("Bank transfer rejected" + statusDetail);
+                builder.message("Bank transfer rejected." + statusDetail);
                 builder.errorCode("MP_REJECTED");
             case "cencelled":
-                builder.message("Bank transfer cancelled succesfully");
+                builder.message("Bank transfer cancelled succesfully.");
                 builder.errorCode("MP_CANCELLED");    
                 break;
         
             default:
-                builder.message("Umknown status" + status);
+                builder.message("Umknown status." + status);
                 builder.errorCode("MP_UNKNOWN_STATUS");
         }
 
