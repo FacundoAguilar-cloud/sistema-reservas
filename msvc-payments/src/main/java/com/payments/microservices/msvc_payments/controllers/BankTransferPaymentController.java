@@ -1,7 +1,6 @@
 package com.payments.microservices.msvc_payments.controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.payments.microservices.msvc_payments.entities.PaymentMethod;
@@ -51,16 +50,12 @@ public ResponseEntity <PaymentResponse> createBankTransferPayment(
         
         log.info("Creating bank transfer payment for appointment." + request.getAppointmentId(), request.getUserId());
 
-        if (request.getUserId().equals(authenticatedUserId)) {
+        if (!request.getUserId().equals(authenticatedUserId)) {
             log.warn("User ID mismatch", authenticatedUserId, request.getUserId());
 
             throw new SecurityException("User ID mismatch");
         }
-
-        
- if (request.getPaymentMethod() != PaymentMethod.BANK_TRANSFER) {
-    throw new IllegalArgumentException("This endpoint only supports BANK_TRANSFER payments.");
- }
+ 
 
  idempotencyService.validateIdempotencyKey(idempotencyKey);
 
@@ -83,8 +78,20 @@ public ResponseEntity <PaymentResponse> createBankTransferPayment(
 
 
 @PostMapping("/{id}/process")
-public ResponseEntity <PaymentResponse> processBankTransferPayment(@PathVariable Long id) {
+@PreAuthorize("hasRole('USER') or hasRole('ADMIN')") 
+public ResponseEntity <PaymentResponse> processBankTransferPayment(@PathVariable Long id, Authentication authentication) {
    log.info("Processing bank transfer payment.", id);
+
+
+
+   PaymentResponse existingPayment = paymentService.getPaymentById(id);
+   Long authenticatedUserId = Long.parseLong(authentication.getName());
+
+   if (!existingPayment.getUserId().equals(authenticatedUserId) 
+   && !authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+
+    throw new SecurityException("Not authorized to process this payment.");
+   }
 
    PaymentResponse response = paymentService.processPayment(id);
 
@@ -94,14 +101,18 @@ public ResponseEntity <PaymentResponse> processBankTransferPayment(@PathVariable
 }
 
 @GetMapping("/{id}")
-public ResponseEntity <PaymentResponse>  getBankTransferPayment(@PathVariable Long id) {
+@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+public ResponseEntity <PaymentResponse>  getBankTransferPayment(@PathVariable Long id, Authentication authentication) {
     log.info("Getting bank transfer payment", id);
 
     PaymentResponse response = paymentService.getPaymentById(id);
 
-    if (response.getPaymentMethod() != PaymentMethod.BANK_TRANSFER) {
-        throw new IllegalArgumentException("Payment is not a bank transfer");
-    }
+   Long authenticatedUserId = Long.parseLong(authentication.getName());
+        if (!response.getUserId().equals(authenticatedUserId) && 
+            !authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new SecurityException("Not authorized to view this payment.");
+        }
 
     return ResponseEntity.ok(response);
 }
@@ -155,20 +166,23 @@ public ResponseEntity <PaymentStatusResponse> checkBankTransferStatus(@PathVaria
 }
 
 @PostMapping("/cancel/{id}")
-public ResponseEntity <PaymentResponse> cancelBankTransferPayment(@PathVariable Long id, @RequestParam Long userId) {
-    log.info("Cancel bank transfer payment.", id, userId);
+ @PreAuthorize("hasRole('USER')")
+public ResponseEntity <PaymentResponse> cancelBankTransferPayment(@PathVariable Long id,  Authentication authentication) {
+    log.info("Cancel bank transfer payment.", id);
+
+    Long authenticatedUserId = Long.parseLong(authentication.getName());
 
     PaymentResponse response = paymentService.getPaymentById(id);
 
-    if (response.getPaymentMethod() != PaymentMethod.BANK_TRANSFER) {
-        throw new IllegalArgumentException("Payment is not a bank transfer.");
+    if (!response.getUserId().equals(authenticatedUserId)) {
+        throw new SecurityException("Not authorized to cancel this payment");
     }
 
     if (response.getPaymentStatus() != PaymentStatus.PENDING) {
         throw new IllegalArgumentException("Only pending payments can be cancelled");
     }
 
-    paymentService.deletePayment(id, userId); //aca tambien deberiamos poner el usuario dado que no cualquier usuario deberia de poder cancelar esto. VER EL SERVICIO
+    paymentService.deletePayment(id, authenticatedUserId); //aca tambien deberiamos poner el usuario dado que no cualquier usuario deberia de poder cancelar esto. VER EL SERVICIO
 
     log.info("Bank transfer payment cancelled successfully", id);
 

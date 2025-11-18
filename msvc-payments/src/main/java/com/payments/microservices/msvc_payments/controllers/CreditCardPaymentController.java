@@ -56,15 +56,11 @@ public ResponseEntity <PaymentResponse> createCreditCardPayment(
     
     log.info("Creating credit card payment for appointment", +  request.getAppointmentId(), request.getUserId());
 
-    if (request.getUserId().equals(authenticatedUserId)) {
+    if (!request.getUserId().equals(authenticatedUserId)) {
             log.warn("User ID mismatch", authenticatedUserId, request.getUserId());
 
             throw new SecurityException("User ID mismatch");
         }
-
-    if (request.getPaymentMethod() != PaymentMethod.CREDIT_CARD) {
-        throw new IllegalArgumentException("This endpoint only supports payment with credit card.");
-    }
 
     idempotencyService.validateIdempotencyKey(idempotencyKey);
 
@@ -88,32 +84,51 @@ public ResponseEntity <PaymentResponse> createCreditCardPayment(
 
 
 @PostMapping("/process/{id}")
-public ResponseEntity <PaymentResponse> processCreditCardPayment(@PathVariable Long id) {
+@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+public ResponseEntity <PaymentResponse> processCreditCardPayment(@PathVariable Long id, Authentication authentication) {
     log.info("Processing credit card payment.");
 
+    PaymentResponse existingPayment = paymentService.getPaymentById(id);
+    Long authenticatedUserId = Long.parseLong(authentication.getName());
+
+    if (!existingPayment.getUserId().equals(authenticatedUserId) && 
+            !authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new SecurityException("Not authorized to process this payment");
+        }
     PaymentResponse response = paymentService.processPayment(id);
-
     log.info("Credit card payment processed.", response.getPaymentStatus());
-
     return ResponseEntity.ok(response);
 }
 
 @GetMapping("/{id}")
-public ResponseEntity <PaymentResponse> getCreditCardPayment(@PathVariable Long id) {
+@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+public ResponseEntity <PaymentResponse> getCreditCardPayment(@PathVariable Long id, Authentication authentication) {
     log.info("Getting credit card payment details.");
     
     PaymentResponse response = paymentService.getPaymentById(id);
 
-    if (response.getPaymentMethod() != PaymentMethod.CREDIT_CARD) {
-        throw new IllegalArgumentException("Payment is not a credit card payment");
-    }
+   Long authenticatedUserId = Long.parseLong(authentication.getName());
+        if (!response.getUserId().equals(authenticatedUserId) && 
+            !authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new SecurityException("Not authorized to view this payment");
+        }
 
     return ResponseEntity.ok(response);
 }
 
 @GetMapping("/user/{userId}")
-public ResponseEntity<List<PaymentResponse>> getUserCrediCardPayments(@PathVariable Long userId) {
+ @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+public ResponseEntity<List<PaymentResponse>> getUserCreditCardPayments(@PathVariable Long userId, Authentication authentication) {
     log.info("Getting credit card payments from user", userId);
+
+     Long authenticatedUserId = Long.parseLong(authentication.getName());
+        if (!userId.equals(authenticatedUserId) && 
+            !authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new SecurityException("Not authorized to view these payments");
+        }
 
     List <PaymentResponse> allPayments = paymentService.getPaymentsByUserId(userId);
 
@@ -126,7 +141,8 @@ public ResponseEntity<List<PaymentResponse>> getUserCrediCardPayments(@PathVaria
 }
 
 @GetMapping("/shop/{shopId}")
-public ResponseEntity <List<PaymentResponse>> getShopCreditCardPayments(@PathVariable Long shopId) {
+ @PreAuthorize("hasRole('SHOP_OWNER') or hasRole('ADMIN')")
+public ResponseEntity <List<PaymentResponse>> getShopCreditCardPayments(@PathVariable Long shopId, Authentication authentication) {
     log.info("Getting credit card payments from shop", shopId);
 
     List <PaymentResponse> allPayments = paymentService.getPaymentsByUserId(shopId);
@@ -159,8 +175,18 @@ public ResponseEntity <PaymentStatusResponse> checkCreditCardStatus(@PathVariabl
 }
 
 @PostMapping("/refund/{id}")
-public ResponseEntity <PaymentResponse> refundCreditCardPayment(@PathVariable Long id, @RequestBody RefundRequest request) {
+ @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+public ResponseEntity <PaymentResponse> refundCreditCardPayment(@PathVariable Long id, @RequestBody RefundRequest request, Authentication authentication) {
    log.info("Requesting refund for debit card payment.", id);
+   
+    PaymentResponse existingPayment = paymentService.getPaymentById(id);
+    Long authenticatedUserId = Long.parseLong(authentication.getName());
+
+     if (!existingPayment.getUserId().equals(authenticatedUserId) && 
+            !authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new SecurityException("Not authorized to refund this payment");
+        }
 
   PaymentResponse response = refundService.processFullRefund(id, request.getUserId(), request.getReason());
 
