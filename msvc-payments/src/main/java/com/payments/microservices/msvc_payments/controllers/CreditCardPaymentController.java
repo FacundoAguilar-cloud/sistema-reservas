@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/payments/credit-card")
-public class CreditCardPaymentController {
+public class CreditCardPaymentController extends BasePaymentController{
 
 private final PaymentService paymentService;
 private final RefundService refundService;
@@ -56,19 +56,8 @@ public ResponseEntity <PaymentResponse> createCreditCardPayment(
     
     log.info("Creating credit card payment for appointment", +  request.getAppointmentId(), request.getUserId());
 
-    if (!request.getUserId().equals(authenticatedUserId)) {
-            log.warn("User ID mismatch", authenticatedUserId, request.getUserId());
-
-            throw new SecurityException("User ID mismatch");
-        }
-
-    idempotencyService.validateIdempotencyKey(idempotencyKey);
-
-    if (idempotencyService.isDuplicateRequest(idempotencyKey)) {
-        PaymentResponse existingPayment = paymentService.getPaymentByIdempotencyKey(idempotencyKey);
-        log.info("Returning existing payment for idempotency key.");
-        return ResponseEntity.ok(existingPayment);
-    }
+     validateUserAuthorization(request.getUserId(), authenticatedUserId);
+     processIdempotency(idempotencyKey);
 
      String clientIp = getClientIp(httpRequest);
      String userAgent = httpRequest.getHeader("User-Agent");
@@ -232,20 +221,7 @@ private void validateCreditCardFields(PaymentCreateRequest request){
     }
 }
 
-private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
-        }
-        // Si viene con múltiples IPs, tomar la primera
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        return ip;
-    }
+
 
 
 

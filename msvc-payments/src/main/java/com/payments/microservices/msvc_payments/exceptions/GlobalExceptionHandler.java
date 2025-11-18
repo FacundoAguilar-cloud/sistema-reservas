@@ -53,4 +53,9 @@ public ResponseEntity <String> handlePayMethod(InvalidPaymentMethodException ex)
     return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
 }
 
+@ExceptionHandler
+public ResponseEntity <String> handleDuplicate (DuplicateRequestException ex){
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+}
+
 }

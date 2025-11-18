@@ -26,22 +26,26 @@ import com.payments.microservices.msvc_payments.services.RefundService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/payments/debit-card")
-public class DebitCardPaymentController {
+public class DebitCardPaymentController extends BasePaymentController {
 
-private final PaymentService paymentService;
-private final RefundService refundService;
-private final IdempotencyService idempotencyService;    
+    private final RefundService refundService;
+   
+
+public DebitCardPaymentController(PaymentService paymentService,IdempotencyService idempotencyService,RefundService refundService) {
+    super(paymentService, idempotencyService);
+    this.refundService = refundService;
+}
+
+
 
 @PostMapping("/generate")
 @PreAuthorize("hasRole('USER')")
-public ResponseEntity <PaymentResponse> createDebitCardPayment(
+public ResponseEntity <PaymentResponse> createDebitCardPayment (
     @Valid @RequestBody PaymentCreateRequest request, @RequestHeader("X-Idempotency-Key") String idempotencyKey,
     Authentication authentication,
     HttpServletRequest httpRequest){
@@ -51,34 +55,24 @@ public ResponseEntity <PaymentResponse> createDebitCardPayment(
     log.info("Creating debit card payment for appointment.", +  request.getAppointmentId(), request.getUserId());
 
     
-    if (request.getUserId().equals(authenticatedUserId)) {
-            log.warn("User ID mismatch", authenticatedUserId, request.getUserId());
+    validateUserAuthorization(request.getUserId(), authenticatedUserId);
 
-            throw new SecurityException("User ID mismatch");
-        }
-    
-    if (request.getPaymentMethod() != PaymentMethod.DEBIT_CARD) {
-        throw new IllegalArgumentException("This endpoint only supports payment with debit card.");
-    }
-    idempotencyService.findByIdIdempotencyKey(idempotencyKey);
+    processIdempotency(idempotencyKey);
 
-    if (idempotencyService.isDuplicateRequest(idempotencyKey)) {
-        PaymentResponse existingPayment = paymentService.getPaymentByIdempotencyKey(idempotencyKey);
-        log.info("Returning existing payment for idempotency key.");
-        return ResponseEntity.ok(existingPayment);
-    }
+    String clientIp = getClientIp(httpRequest);
+    String userAgent = httpRequest.getHeader("User-Agent");
 
-     String clientIp = getClientIp(httpRequest);
-     String userAgent = httpRequest.getHeader("User-Agent");
-
-    validateDebitCardFields(request); 
+    validateDebitCardFields(request);
 
     PaymentResponse response = paymentService.createPayment(request, idempotencyKey, clientIp, userAgent);
 
-    log.info("Debit card payment created successfully", response.getId(), response.getTransactionId());
+        log.info("Debit card payment created successfully. ID: {}, Transaction: {}", 
+                 response.getId(), response.getTransactionId());
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
-}
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+    
+
 
 @PostMapping("/process/{id}")
 public ResponseEntity <PaymentResponse> processDebitCardPayment(@PathVariable Long id) {
@@ -92,14 +86,13 @@ public ResponseEntity <PaymentResponse> processDebitCardPayment(@PathVariable Lo
 }
 
 @GetMapping("/{id}")
-public ResponseEntity <PaymentResponse> getDebitCardPayment(@PathVariable Long id) {
+public ResponseEntity <PaymentResponse> getDebitCardPayment(@PathVariable Long id, Authentication authentication) {
     log.info("Getting debit card payment details.");
     
     PaymentResponse response = paymentService.getPaymentById(id);
 
-    if (response.getPaymentMethod() != PaymentMethod.DEBIT_CARD) {
-        throw new IllegalArgumentException("Payment is not a debit card payment");
-    }
+     Long authenticatedUserId = Long.parseLong(authentication.getName());
+        validatePaymentAccess(response, authenticatedUserId, authentication);
 
     return ResponseEntity.ok(response);
 }
@@ -119,11 +112,10 @@ public ResponseEntity<List<PaymentResponse>> getUserDebitCardPayments(@PathVaria
 }
 
 @GetMapping("/shop/{shopId}")
-public ResponseEntity <List<PaymentResponse>> getShopDebitCardPayments(@PathVariable Long shopId) {
+public ResponseEntity <List<PaymentResponse>> getShopDebitCardPayments(@PathVariable Long shopId, Authentication authentication) {
     log.info("Getting debit card payments from shop", shopId);
 
-    List <PaymentResponse> allPayments = paymentService.getPaymentsByUserId(shopId);
-
+    List <PaymentResponse> allPayments = paymentService.getPaymentsByShopId(shopId);
     List <PaymentResponse> debitCardPayments = allPayments.stream().filter(p->p.getPaymentMethod() == PaymentMethod.DEBIT_CARD).toList();
 
     log.info("Found debit card payments from shop", debitCardPayments.size(), shopId);
@@ -194,20 +186,7 @@ private void validateDebitCardFields(PaymentCreateRequest request){
     }
 }
 
-private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
-        }
-        // Si viene con múltiples IPs, tomar la primera
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        return ip;
-    }
+
 
 
 
