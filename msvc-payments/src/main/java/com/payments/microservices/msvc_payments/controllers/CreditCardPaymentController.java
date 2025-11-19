@@ -23,7 +23,6 @@ import com.payments.microservices.msvc_payments.services.RefundService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,14 +36,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 @RestController
-@RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/payments/credit-card")
 public class CreditCardPaymentController extends BasePaymentController{
 
-private final PaymentService paymentService;
+
 private final RefundService refundService;
-private final IdempotencyService idempotencyService;
+
+public CreditCardPaymentController(PaymentService paymentService,IdempotencyService idempotencyService,RefundService refundService) {
+    super(paymentService, idempotencyService);
+    this.refundService = refundService;
+}
+
 
 @PostMapping("/generate")
 @PreAuthorize("hasRole('USER')")

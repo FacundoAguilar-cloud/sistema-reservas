@@ -14,7 +14,6 @@ import com.payments.microservices.msvc_payments.services.PaymentService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -31,13 +30,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/payments/transf")
 @Slf4j
-public class BankTransferPaymentController {
+public class BankTransferPaymentController extends BasePaymentController {
 
-private final PaymentService paymentService;
-private final IdempotencyService idempotencyService;
+ public BankTransferPaymentController(PaymentService paymentService,  IdempotencyService idempotencyService) {
+        super(paymentService, idempotencyService);
+    }
+
+
 
 @PostMapping("/generate")
 @PreAuthorize("hasRole('USER')")
@@ -50,30 +51,18 @@ public ResponseEntity <PaymentResponse> createBankTransferPayment(
         
         log.info("Creating bank transfer payment for appointment." + request.getAppointmentId(), request.getUserId());
 
-        if (!request.getUserId().equals(authenticatedUserId)) {
-            log.warn("User ID mismatch", authenticatedUserId, request.getUserId());
+        validateUserAuthorization(request.getUserId(), authenticatedUserId);
+        processIdempotency(idempotencyKey);
 
-            throw new SecurityException("User ID mismatch");
-        }
+        String clientIp = getClientIp(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+
+
+        PaymentResponse response = paymentService.createPayment(request, idempotencyKey, clientIp, userAgent);
  
+        log.info("Bank transfer payment created successfully ", response.getId(), response.getTransactionId());
 
- idempotencyService.validateIdempotencyKey(idempotencyKey);
-
- if (idempotencyService.isDuplicateRequest(idempotencyKey)) {
-    PaymentResponse existingPayment = paymentService.getPaymentByIdempotencyKey(idempotencyKey);
-    log.info("Returning existing payment for idempotency key.");
-    return ResponseEntity.ok(existingPayment);
- }
- log.info("Bank transfer payment created successfully.");
-
- String clientIp = getClientIp(httpRequest);
- String userAgent = httpRequest.getHeader("User-Agent");
-
- PaymentResponse response = paymentService.createPayment(request, idempotencyKey, clientIp, userAgent);
- 
- log.info("Bank transfer payment created successfully ", response.getId(), response.getTransactionId());
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
 }
 
 
@@ -209,20 +198,7 @@ public ResponseEntity <CanPayResponse> canPayAppointmentByTransfer(@PathVariable
 
 //metodos de utilidades (extraccion de ip)
 
-private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
-        }
-        // Si viene con múltiples IPs, tomar la primera
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        return ip;
-    }
+
 
 
 
