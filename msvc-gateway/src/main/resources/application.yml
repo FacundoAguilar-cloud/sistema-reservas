@@ -34,7 +34,7 @@ spring:
         - id: payments
           uri: lb://msvc-payments
           predicates:
-            - Path=/api/payment/**    
+            - Path=/api/payments/**    
             
       default-filters:  # TODO OK, YA FUNCIONA TAMBIEN EL GATEWAY!
         - name: PreserveHostHeader

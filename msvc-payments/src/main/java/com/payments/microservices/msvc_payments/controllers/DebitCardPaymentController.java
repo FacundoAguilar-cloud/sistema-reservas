@@ -28,7 +28,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
-@RestController
+@RestController 
 @Slf4j
 @RequestMapping("/api/payments/debit-card")
 public class DebitCardPaymentController extends BasePaymentController {
