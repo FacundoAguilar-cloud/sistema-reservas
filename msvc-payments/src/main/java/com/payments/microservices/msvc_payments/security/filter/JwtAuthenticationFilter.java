@@ -27,13 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Value("/")
+    @Value("${application.security.jwt.secret-key}")
     private String jwtSecret;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
+         String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
@@ -43,33 +43,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 DecodedJWT decodedJWT = jwtVerifier.verify(token);
 
-                String userId = decodedJWT.getSubject();
+                Long userId = decodedJWT.getClaim("id").asLong();
+                String userEmail = decodedJWT.getClaim("email").asString();
+                List<String> roles = decodedJWT.getClaim("roles").asList(String.class);
 
-                List <String> roles = decodedJWT.getClaim("roles").asList(String.class);
+                log.info(" JWT Filter - User ID extracted: {}", userId);
+                log.info(" JWT Filter - User Email extracted: {}", userEmail);
+                log.info(" JWT Filter - Roles extracted: {}", roles);
 
                 if (userId != null) {
-                    List <SimpleGrantedAuthority> authorities = roles != null ?
+                    List<SimpleGrantedAuthority> authorities = roles != null ?
                     roles.stream().map(role -> new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role))
                     .collect(Collectors.toList())
-                    :List.of();
+                    : List.of();
 
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null,  authorities); 
+                    
+                    UsernamePasswordAuthenticationToken authentication = 
+                        new UsernamePasswordAuthenticationToken(userId.toString(), null, authorities); 
+                    
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    log.info("User authenticated successfully with roles:" , userId, roles);
+                    log.info(" JWT Filter - User authenticated successfully: ID={}, Email={}, Roles={}", 
+                             userId, userEmail, roles);
+                } else {
+                    log.error(" JWT Filter - User ID is null in token");
                 }
             } catch (Exception e) {
-                log.error("JWT validation failed", e.getMessage());
+                log.error(" JWT Filter - Token validation failed: {}", e.getMessage());
             }
         }
         filterChain.doFilter(request, response);
+    
     }
 
-    protected boolean noFilter(HttpServletRequest request){
+    protected boolean shouldNotFilter (HttpServletRequest request){
         String path = request.getRequestURI();
 
          return path.startsWith("/api/webhooks") || 
                path.startsWith("/actuator/health");
+              
     }
 
 }

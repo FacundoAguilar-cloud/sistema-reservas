@@ -44,7 +44,7 @@ public DebitCardPaymentController(PaymentService paymentService,IdempotencyServi
 
 
 @PostMapping("/generate")
-@PreAuthorize("hasRole('USER')")
+@PreAuthorize("hasRole('CLIENT')")
 public ResponseEntity <PaymentResponse> createDebitCardPayment (
     @Valid @RequestBody PaymentCreateRequest request, @RequestHeader("X-Idempotency-Key") String idempotencyKey,
     Authentication authentication,

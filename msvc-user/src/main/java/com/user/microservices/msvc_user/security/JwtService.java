@@ -31,8 +31,10 @@ public String generateToken(Authentication authentication){ //genera el token
     map(GrantedAuthority::getAuthority).collect(Collectors.toList());
     return JWT
     .create()
-    .withSubject(userPrincipal.getEmail())
+    .withSubject(userPrincipal.getId().toString())
+    .withClaim("email", userPrincipal.getEmail())
     .withClaim("id",userPrincipal.getId())
+
     .withArrayClaim("roles", roles.toArray(new String[0]))
     .withIssuedAt(new Date())
     .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))

@@ -3,6 +3,7 @@ package com.payments.microservices.msvc_payments.security.filter;
 
 import java.io.IOException;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -54,17 +55,32 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private String getClientIdentifier(HttpServletRequest request){
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if (userId != null && !"anonymousUser".equals(userId)) {
+         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        // ✅ AGREGAR esta validación para cuando authentication es null
+        if (authentication != null && authentication.isAuthenticated() && 
+            !"anonymousUser".equals(authentication.getName())) {
+            String userId = authentication.getName();
+            log.debug("Using user ID for rate limiting: {}", userId);
             return "user:" + userId;
         }
 
-          String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null) {
+        // ✅ Fallback a IP cuando no hay autenticación
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
+        // Si viene con múltiples IPs, tomar la primera
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        
+        log.debug("No authenticated user found, using IP for rate limiting: {}", ip);
         return "ip:" + ip;
+    
     }
 
    
