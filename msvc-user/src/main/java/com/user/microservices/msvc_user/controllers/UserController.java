@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class UserController {
 private final UserServiceIMPL userServiceIMPL;
 
-
+ 
 @GetMapping("/get-all")
 public ResponseEntity <ApiResponse> getAllUsers(){
     List <User> userList = userServiceIMPL.getAllUsers();
@@ -42,11 +42,11 @@ public ResponseEntity <ApiResponse> getAllUsers(){
     return ResponseEntity.ok(new ApiResponse("Users retrieved successfully", dtoList));
     }
 
-@GetMapping("/get-by-id/{userId}")
-public ResponseEntity <ApiResponse> getUserById(@PathVariable Long userId){
+@GetMapping("/get-by-id/{userId}") //esto lo cambiamos para evitar el error y no tener que hacer mas conversiones en un futuro
+public ResponseEntity <UserDto> getUserById(@PathVariable Long userId){
          User user = userServiceIMPL.getUserById(userId);
          UserDto userDto = userServiceIMPL.convertToDto(user);
-        return ResponseEntity.ok(new ApiResponse("User retrieved successfully", userDto));
+        return ResponseEntity.ok(userDto);
 }
 
 @PostMapping("/create") 

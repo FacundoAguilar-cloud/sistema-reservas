@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.payments.microservices.msvc_payments.dto.UserDto;
 
+
 @FeignClient(name ="msvc-user")
 public interface UserClient {
 

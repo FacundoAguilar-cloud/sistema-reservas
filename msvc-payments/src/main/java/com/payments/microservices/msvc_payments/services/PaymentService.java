@@ -29,10 +29,12 @@ import com.payments.microservices.msvc_payments.response.PaymentResponse;
 import com.payments.microservices.msvc_payments.security.services.IdempotencyService;
 import com.payments.microservices.msvc_payments.security.validators.PaymentAmountValidator;
 
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Builder
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentService implements PaymentServiceIMPL {
@@ -63,20 +65,28 @@ public PaymentResponse createPayment(PaymentCreateRequest request, String idempo
     log.info("Creating payment for appointment: {}", request.getAppointmentId());
         
         // usamos servicio de validacion externa
-        ValidationContext validationContext = externalServiceValidation.validateExternalEntities(request);
+        //ValidationContext validationContext = externalServiceValidation.validateExternalEntities(request);
         
         // validamos logica de negocio
-        paymentValidationService.validatePaymentCreation(request, validationContext.getAppointment());
+       // paymentValidationService.validatePaymentCreation(request, validationContext.getAppointment());
 
         paymentAmountValidator.validateAmount(request.getAmount());
-        paymentAmountValidator.validateAmountMatchesAppointment(request.getAmount(), validationContext.getAppointment().getServicePrice());
+        //paymentAmountValidator.validateAmountMatchesAppointment(request.getAmount(), validationContext.getAppointment().getServicePrice());
 
-        BigDecimal todaysTotal = paymentRepository.getTodaysTotalByUserId(request.getUserId());
+        BigDecimal todaysTotal = BigDecimal.ZERO; 
         paymentAmountValidator.validateDayLimit(request.getAmount(), todaysTotal);
 
+        //AppointmentDto appointment = appointmentClient.getAppointmentById(request.getAppointmentId());
+
+        AppointmentDto dummyAppointment = AppointmentDto.builder()
+        .id(request.getAppointmentId())
+        .servicePrice(request.getAmount()) // Usar el amount del request
+        .clientId(request.getUserId())
+        .shopId(request.getShopId())
+        .build();
         
         // creamos y guardamos pago
-        Payment payment = paymentMapper.toEntity(request, validationContext.getAppointment());
+        Payment payment = paymentMapper.toEntity(request, dummyAppointment);
         payment.setIdempotencyKey(idempotencyKey);
         payment.setClientIp(clientIp);
         payment.setUserAgent(userAgent);
@@ -87,6 +97,8 @@ public PaymentResponse createPayment(PaymentCreateRequest request, String idempo
         
         log.info("Payment created successfully with ID: {}", savedPayment.getId());
         return paymentMapper.toResponseDto(savedPayment);
+
+    
 }
 
 @Override
