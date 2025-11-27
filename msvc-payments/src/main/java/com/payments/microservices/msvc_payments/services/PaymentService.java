@@ -65,28 +65,22 @@ public PaymentResponse createPayment(PaymentCreateRequest request, String idempo
     log.info("Creating payment for appointment: {}", request.getAppointmentId());
         
         // usamos servicio de validacion externa
-        //ValidationContext validationContext = externalServiceValidation.validateExternalEntities(request);
-        
+        ValidationContext validationContext = externalServiceValidation.validateExternalEntities(request);
         // validamos logica de negocio
-       // paymentValidationService.validatePaymentCreation(request, validationContext.getAppointment());
+        paymentValidationService.validatePaymentCreation(request, validationContext.getAppointment());
 
         paymentAmountValidator.validateAmount(request.getAmount());
-        //paymentAmountValidator.validateAmountMatchesAppointment(request.getAmount(), validationContext.getAppointment().getServicePrice());
+        paymentAmountValidator.validateAmountMatchesAppointment(request.getAmount(), validationContext.getAppointment().getServicePrice());
 
-        BigDecimal todaysTotal = BigDecimal.ZERO; 
+        BigDecimal todaysTotal = paymentRepository.getTodaysTotalByUserId(request.getUserId());
         paymentAmountValidator.validateDayLimit(request.getAmount(), todaysTotal);
 
-        //AppointmentDto appointment = appointmentClient.getAppointmentById(request.getAppointmentId());
+        AppointmentDto appointment = appointmentClient.getAppointmentById(request.getAppointmentId());
 
-        AppointmentDto dummyAppointment = AppointmentDto.builder()
-        .id(request.getAppointmentId())
-        .servicePrice(request.getAmount()) // Usar el amount del request
-        .clientId(request.getUserId())
-        .shopId(request.getShopId())
-        .build();
+        
         
         // creamos y guardamos pago
-        Payment payment = paymentMapper.toEntity(request, dummyAppointment);
+        Payment payment = paymentMapper.toEntity(request, validationContext.getAppointment());
         payment.setIdempotencyKey(idempotencyKey);
         payment.setClientIp(clientIp);
         payment.setUserAgent(userAgent);

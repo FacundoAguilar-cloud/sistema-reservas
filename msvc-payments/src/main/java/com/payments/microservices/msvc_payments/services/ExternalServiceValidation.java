@@ -38,19 +38,27 @@ public ValidationContext validateExternalEntities(PaymentCreateRequest request){
 }
 
 private UserDto validateUser(Long userId){
+  log.info("🔍 Attempting to validate user with ID: {}", userId);    
 try {
+     log.info("✅ User validation successful: {}", userId != null ? "User found" : "User null");
     UserDto user = userClient.getUserById(userId);
     if (user == null) {
         throw new IllegalArgumentException("User not found.");
     }
     return user;
 } catch (FeignException.NotFound e) {
+    log.error("❌ User not found - FeignException.NotFound: {}", e.getMessage());
     throw new IllegalArgumentException("User not found.");
 }
 catch(FeignException e){
+
+    log.error(" User service communication failed - FeignException: {}", e.getMessage());
+    log.error(" FeignException status: {}, content: {}", e.status(), e.contentUTF8());
     throw new RuntimeException("User service not available, please try again.");
 }
+
 }
+
 
 private ShopDto validateShop(Long shopId){
     try {
